@@ -67,3 +67,15 @@ help:
 		'^.PHONY: .*?## .*$$' $(MAKEFILE_LIST) | \
 		sort | \
 		awk 'BEGIN {FS = ".PHONY: |## "}; {printf "\033[36m%-19s\033[0m %s\n", $$2, $$3}'
+
+.PHONY: test  ## Run all tests
+test: .uv
+	uv run pytest -q
+
+.PHONY: test-cov  ## Run tests with coverage
+test-cov: .uv
+	uv run pytest --cov=src/dory --cov-report=term-missing
+
+.PHONY: test-file  ## Run specific test file (usage: make test-file FILE=tests/test_xyz.py)
+test-file: .uv
+	uv run pytest -q $(FILE)

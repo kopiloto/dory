@@ -5,7 +5,12 @@ description = "A library for managing conversation history in AI-powered applica
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [{ name = "Kopiloto Team", email = "kopiloto@kavak.com" }]
-dependencies = []
+
+# Core runtime dependencies (MongoDB + async support)
+dependencies = [
+    "mongoengine-plus>=1.2.0",
+    "pydantic>=2.5.0",
+]
 license = { text = "MIT" }
 keywords = ["ai", "conversation", "messages", "mongodb"]
 
@@ -20,7 +25,15 @@ packages = ["src/dory"]
 path = "src/dory/__init__.py"
 
 [dependency-groups]
-dev = ["mypy>=1.16.0", "ruff>=0.11.12", "types-requests>=2.32.0.20250515"]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=4.1.0",
+    "mongomock>=4.3.0",
+    "ruff>=0.11.12",
+    "mypy>=1.16.0",
+    "types-requests>=2.32.0.20250515",
+]
 
 [project.scripts]
 dory = "dory:main"
