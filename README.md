@@ -1,4 +1,4 @@
-# Doris
+# Dory
 
 ## Messages Library for Conversational AI
 
@@ -6,7 +6,7 @@ A library for managing conversation history in AI-powered applications for reusa
 
 ## Overview
 
-Doris messages provides simple, reliable conversation and message management with:
+Dory messages provides simple, reliable conversation and message management with:
 
 - **Automatic Conversation Management**: Reuses conversations within a 2-week window
 - **Message Persistence**: Stores user messages and AI responses  
@@ -19,7 +19,7 @@ Doris messages provides simple, reliable conversation and message management wit
 
 ```bash
 # Add to an existing project
-uv add doris
+uv add dory
 
 # Or add to pyproject.toml dependencies
 # Then run:
@@ -29,7 +29,7 @@ uv sync
 ### Using pip
 
 ```bash
-pip install doris
+pip install dory
 ```
 
 ### Add to pyproject.toml
@@ -37,7 +37,7 @@ pip install doris
 ```toml
 [project]
 dependencies = [
-    "doris>=1.0.0",
+    "dory>=1.0.0",
     # ... other dependencies
 ]
 ```
@@ -45,9 +45,9 @@ dependencies = [
 ## Quick Start
 
 ```python
-from doris import Messages, ConversationConfig
-from doris.adapters import MongoDBAdapter
-from doris.types import MessageType, ChatRole
+from dory import Messages, ConversationConfig
+from dory.adapters import MongoDBAdapter
+from dory.types import MessageType, ChatRole
 
 # Initialize with MongoDB
 adapter = MongoDBAdapter(
@@ -179,14 +179,14 @@ adapter = MongoDBAdapter(
 
 ## Migration from kopi-ai-orchestrator-api
 
-### 1. Install Doris
+### 1. Install Dory
 
 ### Add to pyproject.toml
 
 ```toml
 [project]
 dependencies = [
-    "doris>=1.0.0",
+    "dory>=1.0.0",
     # ... other dependencies
 ]
 ```
@@ -199,16 +199,16 @@ from kopi_ai_orchestrator_api.models import Message, Conversation
 from kopi_ai_orchestrator_api.types import ChatRoleType, MessageType
 
 # After:
-from doris import Messages
-from doris.adapters import MongoDBAdapter
-from doris.types import MessageType, ChatRole
+from dory import Messages
+from dory.adapters import MongoDBAdapter
+from dory.types import MessageType, ChatRole
 ```
 
 ### 3. Initialize
 
 ```python
-from doris import Messages
-from doris.adapters import MongoDBAdapter
+from dory import Messages
+from dory.adapters import MongoDBAdapter
 
 adapter = MongoDBAdapter(
     connection_string=MONGODB_URI,
