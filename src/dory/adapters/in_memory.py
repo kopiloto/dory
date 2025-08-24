@@ -23,10 +23,14 @@ class InMemoryAdapter(StorageAdapter):
     async def find_recent_conversation(
         self, *, user_id: str, since: datetime
     ) -> Conversation | None:
-        for conv in self._conversations.values():
-            if conv.user_id == user_id and conv.updated_at >= since:
-                return conv
-        return None
+        candidates = [
+            conv
+            for conv in self._conversations.values()
+            if conv.user_id == user_id and conv.updated_at >= since
+        ]
+        if not candidates:
+            return None
+        return max(candidates, key=lambda c: c.updated_at)
 
     async def create_conversation(self, *, user_id: str) -> Conversation:
         conv_id = generate_prefixed_id(self._config.conversation_id_prefix)
@@ -67,10 +71,10 @@ class InMemoryAdapter(StorageAdapter):
 
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, Any]]:
         filtered = [
             m for m in self._messages.values() if m.conversation_id == conversation_id
         ]
-        filtered.sort(key=lambda m: m.created_at)
+        filtered.sort(key=lambda m: (m.created_at, m.id))
         sliced = filtered[-limit:]
         return [history_item(m.chat_role, m.content) for m in sliced]

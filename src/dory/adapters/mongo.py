@@ -144,7 +144,7 @@ class MongoDBAdapter(StorageAdapter):
 
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, Any]]:
         query: Iterable[MessageDocument] = (
             await MessageDocument.objects(conversation_id=conversation_id)
             .order_by("-created_at", "id")

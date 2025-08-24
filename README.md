@@ -38,7 +38,7 @@ pip install dory
 ```toml
 [project]
 dependencies = [
-    "dory>=1.0.0",
+    "dory>=0.0.1",
     # ... other dependencies
 ]
 ```
@@ -46,42 +46,50 @@ dependencies = [
 ## Quick Start
 
 ```python
+import asyncio
 from dory import Messages, ConversationConfig
 from dory.adapters import MongoDBAdapter
 from dory.types import MessageType, ChatRole
 
-# Initialize with MongoDB
-adapter = MongoDBAdapter(
-    connection_string="mongodb://localhost:27017/myapp",
-    database="myapp",
-)
 
-messages = Messages(adapter=adapter)
+async def main():
+    # Initialize with MongoDB
+    adapter = MongoDBAdapter(
+        connection_string="mongodb://localhost:27017/myapp",
+        database="myapp",
+    )
 
-# Get or create a conversation (reuses if within 2 weeks)
-conversation = await messages.get_or_create_conversation(user_id="user_123")
+    messages = Messages(adapter=adapter)
 
-# Add a user message
-await messages.add_message(
-    conversation_id=conversation.id,
-    user_id="user_123",
-    chat_role=ChatRole.USER,
-    content="What's the weather like?",
-    message_type=MessageType.USER_MESSAGE
-)
+    # Get or create a conversation (reuses if within 2 weeks)
+    conversation = await messages.get_or_create_conversation(user_id="user_123")
 
-# Add an AI response
-await messages.add_message(
-    conversation_id=conversation.id,
-    user_id="user_123",
-    chat_role=ChatRole.AI,
-    content="It's sunny today!",
-    message_type=MessageType.REQUEST_RESPONSE
-)
+    # Add a user message
+    await messages.add_message(
+        conversation_id=conversation.id,
+        user_id="user_123",
+        chat_role=ChatRole.USER,
+        content="What's the weather like?",
+        message_type=MessageType.USER_MESSAGE
+    )
 
-# Get chat history for LangChain/LangGraph
-chat_history = await messages.get_chat_history(conversation.id, limit=30)
-# Returns: [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
+    # Add an AI response
+    await messages.add_message(
+        conversation_id=conversation.id,
+        user_id="user_123",
+        chat_role=ChatRole.AI,
+        content="It's sunny today!",
+        message_type=MessageType.REQUEST_RESPONSE
+    )
+
+    # Get chat history for LangChain/LangGraph
+    chat_history = await messages.get_chat_history(conversation.id, limit=30)
+    # Returns list[dict[str, Any]]; content can be string or structured
+    # E.g. [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
 ## Core API
@@ -110,7 +118,7 @@ class Messages:
         self,
         conversation_id: str,
         limit: int = 30
-    ) -> list[dict[str, str]]:
+    ) -> list[dict[str, Any]]:
         """Get chat history in LangChain/LangGraph format."""
 ```
 
