@@ -2,14 +2,15 @@
 
 ## Messages Library for Conversational AI
 
-A library for managing conversation history in AI-powered applications for reusability across projects.
+A library for managing conversation history in AI-powered applications
+for reusability across projects.
 
 ## Overview
 
 Dory messages provides simple, reliable conversation and message management with:
 
 - **Automatic Conversation Management**: Reuses conversations within a 2-week window
-- **Message Persistence**: Stores user messages and AI responses  
+- **Message Persistence**: Stores user messages and AI responses
 - **LangChain/LangGraph Integration**: Returns chat history in the required format
 - **MongoDB Support**: MongoDB only (for now)
 
@@ -53,8 +54,6 @@ from dory.types import MessageType, ChatRole
 adapter = MongoDBAdapter(
     connection_string="mongodb://localhost:27017/myapp",
     database="myapp",
-    conversations_collection="conversations",
-    messages_collection="messages"
 )
 
 messages = Messages(adapter=adapter)
@@ -74,7 +73,7 @@ await messages.add_message(
 # Add an AI response
 await messages.add_message(
     conversation_id=conversation.id,
-    user_id="user_123", 
+    user_id="user_123",
     chat_role=ChatRole.AI,
     content="It's sunny today!",
     message_type=MessageType.REQUEST_RESPONSE
@@ -96,7 +95,7 @@ class Messages:
         user_id: str
     ) -> Conversation:
         """Get recent conversation or create new one (2-week reuse window)."""
-        
+
     async def add_message(
         self,
         conversation_id: str,
@@ -106,7 +105,7 @@ class Messages:
         message_type: MessageType
     ) -> Message:
         """Add a message to a conversation."""
-        
+
     async def get_chat_history(
         self,
         conversation_id: str,
@@ -141,7 +140,7 @@ class Conversation:
     user_id: str
     created_at: datetime
     updated_at: datetime
-    
+
 class Message:
     id: str                # Format: "MSG_<uuid>"
     conversation_id: str
@@ -160,28 +159,27 @@ class Message:
 adapter = MongoDBAdapter(
     connection_string="mongodb://localhost:27017",
     database="myapp",
-    conversations_collection="conversations",
-    messages_collection="messages",
-    create_indexes=True  # Auto-create indexes
 )
 ```
 
 ### Indexes Created
 
 **Conversations:**
+
 - `user_id`
 - `updated_at`
 
 **Messages:**
+
 - `conversation_id`
 - `created_at`
-- `{conversation_id: 1, created_at: -1}` (compound)
+- `{conversation_id: 1, created_at: 1}` (compound)
 
 ## Migration from kopi-ai-orchestrator-api
 
 ### 1. Install Dory
 
-### Add to pyproject.toml
+### Add dependency to pyproject.toml
 
 ```toml
 [project]
@@ -213,8 +211,6 @@ from dory.adapters import MongoDBAdapter
 adapter = MongoDBAdapter(
     connection_string=MONGODB_URI,
     database="your_database",
-    conversations_collection="conversations",
-    messages_collection="messages"
 )
 
 messages = Messages(adapter)
@@ -252,7 +248,7 @@ The library maintains compatibility with existing MongoDB field names:
 
 - `chat_role` field name is preserved (not changed to `role`)
 - ID formats remain the same (`CONV_xxx`, `MSG_xxx`)
-- Collection names are configurable
+- Collections used: `conversations` and `messages`
 - 2-week conversation reuse window is maintained
 
 ## Configuration
@@ -262,10 +258,13 @@ The library maintains compatibility with existing MongoDB field names:
 class ConversationConfig:
     # Conversation reuse window in days
     reuse_window_days: int = 14
-    
+    # Default chat history limit
+    history_limit: int = 30
     # ID prefixes (matching existing schema)
     conversation_id_prefix: str = "CONV_"
     message_id_prefix: str = "MSG_"
+    # Connection timeout (seconds)
+    connection_timeout_seconds: int = 30
 ```
 
 ## License
