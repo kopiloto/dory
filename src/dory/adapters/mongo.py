@@ -3,16 +3,15 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any, Iterable
 
-from mongoengine_plus import (
+from mongoengine import (
     DateTimeField,
-    Document,
     DynamicField,
     EnumField,
     StringField,
     connect,
 )
 from mongoengine_plus.aio import AsyncDocument
-from mongoengine_plus.models import uuid_field
+from mongoengine_plus.models import BaseModel, uuid_field
 from mongoengine_plus.models.event_handlers import updated_at
 
 from ..models import Conversation, Message
@@ -23,7 +22,7 @@ __all__ = ["MongoDBAdapter"]
 
 
 @updated_at.apply
-class ConversationDocument(Document, AsyncDocument):
+class ConversationDocument(BaseModel, AsyncDocument):
     meta = {
         "collection": "conversations",
         "indexes": [
@@ -40,13 +39,13 @@ class ConversationDocument(Document, AsyncDocument):
     updated_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
 
 
-class MessageDocument(Document, AsyncDocument):
+class MessageDocument(BaseModel, AsyncDocument):
     meta = {
         "collection": "messages",
         "indexes": [
             "conversation_id",
             "created_at",
-            {"fields": ["conversation_id", "created_at", "-1"]},
+            {"fields": ["conversation_id", "created_at"]},
         ],
         "auto_create_index": True,
     }
@@ -82,7 +81,7 @@ class MongoDBAdapter(StorageAdapter):
 
     @staticmethod
     def _to_conversation(doc: ConversationDocument) -> Conversation:
-        return Conversation.model_validate(doc.to_mongo().to_dict())
+        return Conversation.model_validate(doc, from_attributes=True)
 
     async def find_recent_conversation(
         self, *, user_id: str, since: datetime
@@ -98,6 +97,7 @@ class MongoDBAdapter(StorageAdapter):
     async def create_conversation(self, *, user_id: str) -> Conversation:
         doc = ConversationDocument(user_id=user_id)
         await doc.async_save()
+        await doc.async_reload()
         return self._to_conversation(doc)
 
     async def get_conversation(self, conversation_id: str) -> Conversation | None:
@@ -105,7 +105,7 @@ class MongoDBAdapter(StorageAdapter):
         return self._to_conversation(doc) if doc else None
 
     async def update_conversation_timestamp(self, conversation_id: str) -> None:
-        await ConversationDocument.objects(id=conversation_id).update_one(
+        await ConversationDocument.objects(id=conversation_id).async_update(
             set__updated_at=datetime.now(UTC)
         )
 
@@ -131,7 +131,7 @@ class MongoDBAdapter(StorageAdapter):
         )
         await msg_doc.async_save()
         await self.update_conversation_timestamp(conversation_id)
-        return Message.model_validate(msg_doc.to_mongo().to_dict())
+        return Message.model_validate(msg_doc, from_attributes=True)
 
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
