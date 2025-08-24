@@ -11,12 +11,14 @@ from mongoengine import (
     connect,
 )
 from mongoengine_plus.aio import AsyncDocument
-from mongoengine_plus.models import BaseModel, uuid_field
+from mongoengine_plus.models import BaseModel
 from mongoengine_plus.models.event_handlers import updated_at
 
+from ..config import ConversationConfig
 from ..models import Conversation, Message
 from ..types import ChatRole, MessageType
 from .base import StorageAdapter
+from .utils import generate_prefixed_id, history_item
 
 __all__ = ["MongoDBAdapter"]
 
@@ -33,7 +35,7 @@ class ConversationDocument(BaseModel, AsyncDocument):
         "auto_create_index": True,
     }
 
-    id: str = StringField(primary_key=True, default=uuid_field("CONV_"))
+    id: str = StringField(primary_key=True)
     user_id: str = StringField(required=True)
     created_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
     updated_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
@@ -50,7 +52,7 @@ class MessageDocument(BaseModel, AsyncDocument):
         "auto_create_index": True,
     }
 
-    id: str = StringField(primary_key=True, default=uuid_field("MSG_"))
+    id: str = StringField(primary_key=True)
     conversation_id: str = StringField(required=True)
     user_id: str = StringField(required=True)
     chat_role: ChatRole = EnumField(ChatRole, required=True)
@@ -64,17 +66,21 @@ class MongoDBAdapter(StorageAdapter):
 
     def __init__(
         self,
+        config: ConversationConfig | None = None,
         *,
         connection_string: str | None = None,
         database: str | None = None,
         alias: str = "default",
         **connect_kwargs: Any,
     ) -> None:
+        self._config = config or ConversationConfig()
+
         if connection_string:
             connect(
                 host=connection_string,
                 db=database,
                 alias=alias,
+                connectTimeoutMS=self._config.connection_timeout_seconds * 1000,
                 **connect_kwargs,
             )
         self._alias = alias
@@ -95,7 +101,8 @@ class MongoDBAdapter(StorageAdapter):
         return self._to_conversation(doc) if doc else None
 
     async def create_conversation(self, *, user_id: str) -> Conversation:
-        doc = ConversationDocument(user_id=user_id)
+        conv_id = generate_prefixed_id(self._config.conversation_id_prefix)
+        doc = ConversationDocument(id=conv_id, user_id=user_id)
         await doc.async_save()
         await doc.async_reload()
         return self._to_conversation(doc)
@@ -111,7 +118,7 @@ class MongoDBAdapter(StorageAdapter):
 
     @staticmethod
     def _to_history_dict(msg: MessageDocument) -> dict[str, str]:
-        return {msg.chat_role.value: msg.content}
+        return history_item(msg.chat_role, msg.content)
 
     async def add_message(
         self,
@@ -122,7 +129,9 @@ class MongoDBAdapter(StorageAdapter):
         content: Any,
         message_type: MessageType,
     ) -> Message:
+        msg_id = generate_prefixed_id(self._config.message_id_prefix)
         msg_doc = MessageDocument(
+            id=msg_id,
             conversation_id=conversation_id,
             user_id=user_id,
             chat_role=chat_role,
@@ -138,8 +147,8 @@ class MongoDBAdapter(StorageAdapter):
     ) -> list[dict[str, str]]:
         query: Iterable[MessageDocument] = (
             await MessageDocument.objects(conversation_id=conversation_id)
-            .order_by("created_at")
+            .order_by("-created_at", "id")
             .limit(limit)
             .async_to_list()
         )
-        return [self._to_history_dict(message) for message in query]
+        return [self._to_history_dict(msg) for msg in reversed(list(query))]

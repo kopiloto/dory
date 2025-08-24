@@ -1,5 +1,4 @@
 import asyncio
-from datetime import UTC, datetime, timedelta
 
 import mongomock
 import pytest
@@ -9,27 +8,43 @@ from dory.messages import Messages
 from dory.types import ChatRole, MessageType
 
 
-@pytest.fixture(scope="module")
-def mongo_adapter() -> MongoDBAdapter:  # type: ignore[return-value]
-    # Use mongomock for an in-memory MongoDB substitute
-    return MongoDBAdapter(
+@pytest.fixture(scope="function")
+def mongo_adapter() -> MongoDBAdapter:
+    from mongoengine import disconnect
+
+    from dory.adapters.mongo import ConversationDocument, MessageDocument
+
+    disconnect()
+
+    adapter = MongoDBAdapter(
         connection_string="mongodb://localhost",
         database="test_db",
-        mongo_client_class=mongomock.MongoClient,  # type: ignore[arg-type]
+        mongo_client_class=mongomock.MongoClient,
     )
+
+    yield adapter
+
+    try:
+        import asyncio
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(ConversationDocument.drop_collection())
+        loop.run_until_complete(MessageDocument.drop_collection())
+    except Exception:
+        pass
+    finally:
+        disconnect()
 
 
 @pytest.mark.asyncio
 async def test_conversation_lifecycle(mongo_adapter: MongoDBAdapter) -> None:
     service = Messages(adapter=mongo_adapter)
 
-    # First request creates a conversation
     conv = await service.get_or_create_conversation(user_id="mongo-user")
     assert conv.user_id == "mongo-user"
 
-    # Touch updated_at by adding a message
     first_updated_at = conv.updated_at
-    await asyncio.sleep(0)  # Yield control to ensure timestamp difference
+    await asyncio.sleep(0)
 
     await service.add_message(
         conversation_id=conv.id,
@@ -60,6 +75,9 @@ async def test_chat_history_order(mongo_adapter: MongoDBAdapter) -> None:
         content="msg1",
         message_type=MessageType.USER_MESSAGE,
     )
+
+    # Small delay to ensure different timestamps
+    await asyncio.sleep(0.001)
 
     await service.add_message(
         conversation_id=conv.id,

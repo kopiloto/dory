@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-import uuid
 from datetime import UTC, datetime
 from typing import Any
 
+from ..config import ConversationConfig
 from ..models import Conversation, Message
 from ..types import ChatRole, MessageType
 from .base import StorageAdapter
+from .utils import generate_prefixed_id, history_item
 
 __all__ = ["InMemoryAdapter"]
 
@@ -14,7 +15,8 @@ __all__ = ["InMemoryAdapter"]
 class InMemoryAdapter(StorageAdapter):
     """In-memory implementation for tests and demos."""
 
-    def __init__(self) -> None:
+    def __init__(self, config: ConversationConfig | None = None) -> None:
+        self._config = config or ConversationConfig()
         self._conversations: dict[str, Conversation] = {}
         self._messages: dict[str, Message] = {}
 
@@ -27,7 +29,7 @@ class InMemoryAdapter(StorageAdapter):
         return None
 
     async def create_conversation(self, *, user_id: str) -> Conversation:
-        conv_id = f"CONV_{uuid.uuid4().hex}"
+        conv_id = generate_prefixed_id(self._config.conversation_id_prefix)
         conv = Conversation(id=conv_id, user_id=user_id)
         self._conversations[conv_id] = conv
         return conv
@@ -50,7 +52,7 @@ class InMemoryAdapter(StorageAdapter):
         content: Any,
         message_type: MessageType,
     ) -> Message:
-        msg_id = f"MSG_{uuid.uuid4().hex}"
+        msg_id = generate_prefixed_id(self._config.message_id_prefix)
         msg = Message(
             id=msg_id,
             conversation_id=conversation_id,
@@ -66,12 +68,9 @@ class InMemoryAdapter(StorageAdapter):
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
     ) -> list[dict[str, str]]:
-        # Filter messages by conversation_id and message types for history
         filtered = [
             m for m in self._messages.values() if m.conversation_id == conversation_id
         ]
-        # Order by created_at asc
         filtered.sort(key=lambda m: m.created_at)
-        # Only keep last `limit`
         sliced = filtered[-limit:]
-        return [{m.chat_role.value: m.content} for m in sliced]
+        return [history_item(m.chat_role, m.content) for m in sliced]

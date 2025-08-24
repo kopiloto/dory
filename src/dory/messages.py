@@ -29,8 +29,15 @@ class Messages:
             return conversation
         return await self._adapter.create_conversation(user_id=user_id)
 
-    async def get_conversation(self, conversation_id: str) -> Conversation | None:
-        return await self._adapter.get_conversation(conversation_id)
+    async def get_conversation(self, conversation_id: str) -> Conversation:
+        """Fetch a conversation or raise if it does not exist."""
+
+        conversation = await self._adapter.get_conversation(conversation_id)
+        if conversation is None:
+            from .exceptions import ConversationNotFoundError
+
+            raise ConversationNotFoundError(conversation_id)
+        return conversation
 
     async def add_message(
         self,
