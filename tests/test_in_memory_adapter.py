@@ -36,4 +36,4 @@ async def test_add_and_fetch_messages() -> None:
     )
 
     history = await adapter.get_chat_history(conversation_id=conv.id, limit=5)
-    assert history == [{ChatRole.USER: "hi"}, {ChatRole.AI: "hello"}]
+    assert history == [{"user": "hi"}, {"ai": "hello"}]

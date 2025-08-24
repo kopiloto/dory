@@ -27,5 +27,5 @@ async def test_get_or_create_and_history() -> None:
     )
 
     history = await service.get_chat_history(conversation.id)
-    assert history[-1] == {ChatRole.AI: "hi!"}
+    assert history[-1] == {"ai": "hi!"}
     assert len(history) == 2

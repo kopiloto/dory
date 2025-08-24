@@ -49,7 +49,9 @@ class Messages:
             message_type=message_type,
         )
 
-    async def get_chat_history(self, conversation_id: str, *, limit: int | None = None):
+    async def get_chat_history(
+        self, conversation_id: str, *, limit: int | None = None
+    ) -> list[dict[str, str]]:
         return await self._adapter.get_chat_history(
             conversation_id=conversation_id,
             limit=limit or self._config.history_limit,

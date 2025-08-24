@@ -110,8 +110,8 @@ class MongoDBAdapter(StorageAdapter):
         )
 
     @staticmethod
-    def _to_history_dict(msg: MessageDocument) -> dict[ChatRole, str]:
-        return {msg.chat_role: msg.content}
+    def _to_history_dict(msg: MessageDocument) -> dict[str, str]:
+        return {msg.chat_role.value: msg.content}
 
     async def add_message(
         self,
@@ -135,7 +135,7 @@ class MongoDBAdapter(StorageAdapter):
 
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
-    ) -> list[dict[ChatRole, str]]:
+    ) -> list[dict[str, str]]:
         query: Iterable[MessageDocument] = (
             await MessageDocument.objects(conversation_id=conversation_id)
             .order_by("created_at")

@@ -65,7 +65,7 @@ class InMemoryAdapter(StorageAdapter):
 
     async def get_chat_history(
         self, *, conversation_id: str, limit: int
-    ) -> list[dict[ChatRole, str]]:
+    ) -> list[dict[str, str]]:
         # Filter messages by conversation_id and message types for history
         filtered = [
             m for m in self._messages.values() if m.conversation_id == conversation_id
@@ -74,4 +74,4 @@ class InMemoryAdapter(StorageAdapter):
         filtered.sort(key=lambda m: m.created_at)
         # Only keep last `limit`
         sliced = filtered[-limit:]
-        return [{m.chat_role: m.content} for m in sliced]
+        return [{m.chat_role.value: m.content} for m in sliced]
