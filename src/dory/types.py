@@ -19,5 +19,4 @@ class MessageType(str, Enum):
     """A coarse-grained classification used by orchestrators and tools."""
 
     USER_MESSAGE = "user_message"
-    TERMINAL_TOOL_QUERY = "terminal_tool_query"
     REQUEST_RESPONSE = "request_response"

@@ -9,7 +9,6 @@ def test_chat_role_values() -> None:
 
 def test_message_type_values() -> None:
     assert MessageType.USER_MESSAGE.value == "user_message"
-    assert MessageType.TERMINAL_TOOL_QUERY.value == "terminal_tool_query"
     assert MessageType.REQUEST_RESPONSE.value == "request_response"
 
 

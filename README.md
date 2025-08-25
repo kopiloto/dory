@@ -127,7 +127,6 @@ class Messages:
 ```python
 class MessageType(str, Enum):
     USER_MESSAGE = "user_message"              # User input
-    TERMINAL_TOOL_QUERY = "terminal_tool_query"  # Tool execution query
     REQUEST_RESPONSE = "request_response"        # Final AI response
 ```
 
@@ -182,98 +181,6 @@ adapter = MongoDBAdapter(
 - `conversation_id`
 - `created_at`
 - `{conversation_id: 1, created_at: 1}` (compound)
-
-## Migration from kopi-ai-orchestrator-api
-
-### 1. Install Dory
-
-### Add dependency to pyproject.toml
-
-```toml
-[project]
-dependencies = [
-    "dory>=1.0.0",
-    # ... other dependencies
-]
-```
-
-### 2. Update Imports
-
-```python
-# Before:
-from kopi_ai_orchestrator_api.models import Message, Conversation
-from kopi_ai_orchestrator_api.types import ChatRoleType, MessageType
-
-# After:
-from dory import Messages
-from dory.adapters import MongoDBAdapter
-from dory.types import MessageType, ChatRole
-```
-
-### 3. Initialize
-
-```python
-from dory import Messages
-from dory.adapters import MongoDBAdapter
-
-adapter = MongoDBAdapter(
-    connection_string=MONGODB_URI,
-    database="your_database",
-)
-
-messages = Messages(adapter)
-```
-
-### 4. Update Usage
-
-```python
-# Before:
-conversation = await Conversation.find_recent_or_create(user_id=user_id)
-await Message.create(
-    conversation_id=conversation.id,
-    user_id=user_id,
-    chat_role=ChatRoleType.user,
-    content=message,
-    message_type=MessageType.user_message
-)
-chat_history = await Message.get_chat_history(conversation.id)
-
-# After:
-conversation = await messages.get_or_create_conversation(user_id=user_id)
-await messages.add_message(
-    conversation_id=conversation.id,
-    user_id=user_id,
-    chat_role=ChatRole.USER,
-    content=message,
-    message_type=MessageType.USER_MESSAGE
-)
-chat_history = await messages.get_chat_history(conversation.id)
-```
-
-### 5. Field Mapping
-
-The library maintains compatibility with existing MongoDB field names:
-
-- `chat_role` field name is preserved (not changed to `role`)
-- ID formats remain the same (`CONV_xxx`, `MSG_xxx`)
-- Collections used: `conversations` and `messages`
-- 2-week conversation reuse window is maintained
-
-## Configuration
-
-```python
-@dataclass
-class ConversationConfig:
-    # Conversation reuse window in days
-    reuse_window_days: int = 14
-    # Default chat history limit
-    history_limit: int = 30
-    # ID prefixes (matching existing schema)
-    conversation_id_prefix: str = "CONV_"
-    message_id_prefix: str = "MSG_"
-    # Connection timeout (seconds)
-    connection_timeout_seconds: int = 30
-```
 
 ## License
 

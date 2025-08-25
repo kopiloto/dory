@@ -21,6 +21,9 @@ class Messages:
         self._config = config or ConversationConfig()
 
     async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
+        # Determine the earliest timestamp that still falls inside the
+        # inactivity window. Any conversation whose `updated_at` is older than
+        # this value is considered stale and will not be reused.
         reuse_since = datetime.now(UTC) - timedelta(days=self._config.reuse_window_days)
         conversation = await self._adapter.find_recent_conversation(
             user_id=user_id, since=reuse_since

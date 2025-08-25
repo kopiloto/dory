@@ -7,7 +7,11 @@ __all__ = ["ConversationConfig"]
 class ConversationConfig:
     """Runtime configuration for conversation behaviour."""
 
-    reuse_window_days: int = 14  # Conversation reuse window
+    # Maximum period of inactivity (in days) after which a new
+    # conversation will be created instead of re-using the previous one.
+    # The counter is reset every time the conversation `updated_at` field
+    # is modified (i.e. whenever a new message is stored).
+    reuse_window_days: int = 14
     history_limit: int = 30  # Default chat history limit
     conversation_id_prefix: str = "CONV_"
     message_id_prefix: str = "MSG_"
