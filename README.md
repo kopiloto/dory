@@ -47,7 +47,7 @@ dependencies = [
 
 ```python
 import asyncio
-from dory import Messages, ConversationConfig
+from dory import Memory, ConversationConfig
 from dory.adapters import MongoDBAdapter
 from dory.types import MessageType, ChatRole
 
@@ -59,13 +59,13 @@ async def main():
         database="myapp",
     )
 
-    messages = Messages(adapter=adapter)
+    memory = Memory(adapter=adapter)
 
     # Get or create a conversation (reuses if within 2 weeks)
-    conversation = await messages.get_or_create_conversation(user_id="user_123")
+    conversation = await memory.get_or_create_conversation(user_id="user_123")
 
     # Add a user message
-    await messages.add_message(
+    await memory.add_message(
         conversation_id=conversation.id,
         user_id="user_123",
         chat_role=ChatRole.USER,
@@ -74,7 +74,7 @@ async def main():
     )
 
     # Add an AI response
-    await messages.add_message(
+    await memory.add_message(
         conversation_id=conversation.id,
         user_id="user_123",
         chat_role=ChatRole.AI,
@@ -83,7 +83,7 @@ async def main():
     )
 
     # Get chat history for LangChain/LangGraph
-    chat_history = await messages.get_chat_history(conversation.id, limit=30)
+    chat_history = await memory.get_chat_history(conversation.id, limit=30)
     # Returns list[dict[str, Any]]; content can be string or structured
     # E.g. [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
 
@@ -92,27 +92,27 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-## Core API
+## Core
 
-### Messages Class
+### Memory
 
 ```python
-class Messages:
-    async def get_or_create_conversation(
-        self,
-        user_id: str
-    ) -> Conversation:
+class Memory:
+    async def get_or_create_conversation(self, user_id: str) -> Conversation:
         """Get recent conversation or create new one (2-week reuse window)."""
 
     async def add_message(
         self,
-        conversation_id: str,
-        user_id: str,
-        chat_role: ChatRole,
-        content: Any,
-        message_type: MessageType
+        conversation_id: str | None = None,
+        message_id: str | None = None,
+        user_id: str = ...,  # required
+        chat_role: ChatRole = ...,  # required
+        content: Any = ...,  # required
+        message_type: MessageType = ...,  # required
     ) -> Message:
-        """Add a message to a conversation."""
+        """Add a message. If conversation_id is None, a new conversation is created.
+        If message_id is None, an ID is auto-generated.
+        """
 
     async def get_chat_history(
         self,
@@ -129,6 +129,13 @@ class MessageType(str, Enum):
     USER_MESSAGE = "user_message"              # User input
     REQUEST_RESPONSE = "request_response"        # Final AI response
 ```
+
+### Optional IDs
+
+Both `conversation_id` and `message_id` can be provided. If omitted:
+
+- conversation_id: a new conversation is created for the given `user_id`
+- message_id: an ID is generated using the configured prefix
 
 ### Chat Roles
 

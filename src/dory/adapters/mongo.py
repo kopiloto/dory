@@ -125,13 +125,19 @@ class MongoDBAdapter(StorageAdapter):
     async def add_message(
         self,
         *,
-        conversation_id: str,
+        message_id: str | None = None,
+        conversation_id: str | None = None,
         user_id: str,
         chat_role: ChatRole,
         content: Any,
         message_type: MessageType,
     ) -> Message:
-        msg_id = generate_prefixed_id(self._config.message_id_prefix)
+        # Ensure conversation exists or create a new one for this user when not provided
+        if conversation_id is None:
+            conversation = await self.create_conversation(user_id=user_id)
+            conversation_id = conversation.id
+
+        msg_id = message_id or generate_prefixed_id(self._config.message_id_prefix)
         msg_doc = MessageDocument(
             id=msg_id,
             conversation_id=conversation_id,

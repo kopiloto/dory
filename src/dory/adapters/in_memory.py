@@ -50,13 +50,21 @@ class InMemoryAdapter(StorageAdapter):
     async def add_message(
         self,
         *,
-        conversation_id: str,
+        message_id: str | None = None,
+        conversation_id: str | None = None,
         user_id: str,
         chat_role: ChatRole,
         content: Any,
         message_type: MessageType,
     ) -> Message:
-        msg_id = generate_prefixed_id(self._config.message_id_prefix)
+        # Ensure conversation ID exists or create a new conversation for this user
+        if conversation_id is None:
+            conversation_id = generate_prefixed_id(self._config.conversation_id_prefix)
+            self._conversations[conversation_id] = Conversation(
+                id=conversation_id, user_id=user_id
+            )
+
+        msg_id = message_id or generate_prefixed_id(self._config.message_id_prefix)
         msg = Message(
             id=msg_id,
             conversation_id=conversation_id,

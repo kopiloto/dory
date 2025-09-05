@@ -45,7 +45,8 @@ class Messages:
     async def add_message(
         self,
         *,
-        conversation_id: str,
+        conversation_id: str | None = None,
+        message_id: str | None = None,
         user_id: str,
         chat_role: ChatRole,
         content: Any,
@@ -53,6 +54,7 @@ class Messages:
     ) -> Message:
         return await self._adapter.add_message(
             conversation_id=conversation_id,
+            message_id=message_id,
             user_id=user_id,
             chat_role=chat_role,
             content=content,
