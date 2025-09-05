@@ -1,43 +1,15 @@
 import asyncio
 
-import mongomock
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from dory.adapters.mongo import MongoDBAdapter
 from dory.messages import Messages
 from dory.types import ChatRole, MessageType
 
 
-@pytest.fixture(scope="function")
-def mongo_adapter() -> MongoDBAdapter:
-    from mongoengine import disconnect
-
-    from dory.adapters.mongo import ConversationDocument, MessageDocument
-
-    disconnect()
-
-    adapter = MongoDBAdapter(
-        connection_string="mongodb://localhost",
-        database="test_db",
-        mongo_client_class=mongomock.MongoClient,
-    )
-
-    yield adapter
-
-    try:
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(ConversationDocument.drop_collection())
-        loop.run_until_complete(MessageDocument.drop_collection())
-    except Exception:
-        pass
-    finally:
-        disconnect()
-
-
-@pytest.mark.asyncio
-async def test_conversation_lifecycle(mongo_adapter: MongoDBAdapter) -> None:
+async def test_should_update_timestamp_and_reuse_when_message_added(
+    mongo_adapter: MongoDBAdapter,
+) -> None:
     service = Messages(adapter=mongo_adapter)
 
     conv = await service.get_or_create_conversation(user_id="mongo-user")
@@ -63,8 +35,9 @@ async def test_conversation_lifecycle(mongo_adapter: MongoDBAdapter) -> None:
     assert reused.id == conv.id
 
 
-@pytest.mark.asyncio
-async def test_chat_history_order(mongo_adapter: MongoDBAdapter) -> None:
+async def test_should_return_messages_in_chronological_order_when_history_requested(
+    mongo_adapter: MongoDBAdapter,
+) -> None:
     service = Messages(adapter=mongo_adapter)
     conv = await service.get_or_create_conversation(user_id="hist-user")
 

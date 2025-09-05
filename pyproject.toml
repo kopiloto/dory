@@ -32,12 +32,12 @@ dev = [
     "types-requests>=2.32.0.20250515",
 ]
 
-[project.scripts]
-dory = "dory:main"
-
 [project.optional-dependencies]
 linting = ["ruff", "mypy", "types-requests"]
 
 [tool.mypy]
 ignore_missing_imports = true
 plugins = "pydantic.mypy"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.exceptions import ConversationNotFoundError
@@ -9,16 +9,14 @@ from dory.messages import Messages
 from dory.types import ChatRole, MessageType
 
 
-@pytest.mark.asyncio
-async def test_get_conversation_not_found() -> None:
+async def test_should_raise_not_found_when_conversation_missing() -> None:
     service = Messages(adapter=InMemoryAdapter())
 
-    with pytest.raises(ConversationNotFoundError):
+    with pytest.raises(ConversationNotFoundError):  # type: ignore[attr-defined]
         await service.get_conversation("CONV_nonexistent")
 
 
-@pytest.mark.asyncio
-async def test_chat_history_limit_behavior() -> None:
+async def test_should_return_last_n_messages_when_limit_is_provided() -> None:
     service = Messages(adapter=InMemoryAdapter())
     conversation = await service.get_or_create_conversation(user_id="limit-user")
 
@@ -47,8 +45,9 @@ async def test_chat_history_limit_behavior() -> None:
     ]
 
 
-@pytest.mark.asyncio
-async def test_non_string_content_in_history() -> None:
+async def test_should_allow_structured_content_when_adding_and_reading_history() -> (
+    None
+):
     service = Messages(adapter=InMemoryAdapter())
     conversation = await service.get_or_create_conversation(user_id="content-user")
 

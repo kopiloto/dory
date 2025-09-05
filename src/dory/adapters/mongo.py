@@ -119,7 +119,7 @@ class MongoDBAdapter(StorageAdapter):
         )
 
     @staticmethod
-    def _to_history_dict(msg: MessageDocument) -> dict[str, str]:
+    def _to_history_dict(msg: MessageDocument) -> dict[str, Any]:
         return history_item(msg.chat_role, msg.content)
 
     async def add_message(

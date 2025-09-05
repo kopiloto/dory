@@ -1,11 +1,10 @@
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.types import ChatRole, MessageType
 
 
-@pytest.mark.asyncio
-async def test_conversation_reuse() -> None:
+async def test_should_reuse_conversation_when_within_reuse_window() -> None:
     adapter = InMemoryAdapter()
     conv1 = await adapter.create_conversation(user_id="user_1")
 
@@ -15,8 +14,7 @@ async def test_conversation_reuse() -> None:
     assert recent == conv1
 
 
-@pytest.mark.asyncio
-async def test_add_and_fetch_messages() -> None:
+async def test_should_store_and_return_messages_when_added_to_conversation() -> None:
     adapter = InMemoryAdapter()
     conv = await adapter.create_conversation(user_id="u")
 

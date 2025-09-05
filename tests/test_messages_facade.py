@@ -1,12 +1,13 @@
-import pytest
+import pytest  # type: ignore[import-not-found]
 
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.messages import Messages
 from dory.types import ChatRole, MessageType
 
 
-@pytest.mark.asyncio
-async def test_get_or_create_and_history() -> None:
+async def test_should_create_conversation_and_return_history_when_messages_added() -> (
+    None
+):
     service = Messages(adapter=InMemoryAdapter())
 
     conversation = await service.get_or_create_conversation(user_id="u12345678910")
