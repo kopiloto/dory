@@ -26,6 +26,7 @@ dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.25.0",
     "pytest-cov>=4.1.0",
+    "testcontainers>=4.9.0",
     "mongomock>=4.3.0",
     "ruff>=0.11.12",
     "mypy>=1.16.0",
@@ -41,3 +42,4 @@ plugins = "pydantic.mypy"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+addopts = "-p no:warnings -v --cov-report term-missing --cov=src/dory"
