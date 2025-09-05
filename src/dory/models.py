@@ -18,6 +18,9 @@ class Conversation(BaseModel):
 
     id: str = Field(..., description="Conversation identifier (e.g. CONV_<uuid>)")
     user_id: str = Field(..., description="User who owns the conversation")
+    metadata: dict[str, Any] | None = Field(
+        default=None, description="Optional application-defined metadata"
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
@@ -31,4 +34,7 @@ class Message(BaseModel):
     chat_role: ChatRole
     content: Any
     message_type: MessageType
+    metadata: dict[str, Any] | None = Field(
+        default=None, description="Optional application-defined metadata"
+    )
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

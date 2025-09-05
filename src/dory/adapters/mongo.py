@@ -37,6 +37,7 @@ class ConversationDocument(BaseModel, AsyncDocument):
 
     id: str = StringField(primary_key=True)
     user_id: str = StringField(required=True)
+    metadata: Any = DynamicField()
     created_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
     updated_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
 
@@ -58,6 +59,7 @@ class MessageDocument(BaseModel, AsyncDocument):
     chat_role: ChatRole = EnumField(ChatRole, required=True)
     content: Any = DynamicField(required=True)
     message_type: MessageType = EnumField(MessageType, required=True)
+    metadata: Any = DynamicField()
     created_at: datetime = DateTimeField(default=lambda: datetime.now(UTC))
 
 
