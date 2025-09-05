@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-from .adapters.base import StorageAdapter
-from .config import ConversationConfig
 from .messages import Messages
 from .models import Conversation, Message
 from .types import ChatRole, MessageType
@@ -14,10 +12,9 @@ __all__ = ["Memory"]
 class Memory:
     """Unified facade for memory features."""
 
-    def __init__(
-        self, adapter: StorageAdapter, config: ConversationConfig | None = None
-    ) -> None:
-        self._messages = Messages(adapter=adapter, config=config)
+    def __init__(self, messages: Messages) -> None:
+        """Initialize Memory with a Messages instance."""
+        self._messages = messages
 
     async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
         return await self._messages.get_or_create_conversation(user_id=user_id)

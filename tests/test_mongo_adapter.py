@@ -1,7 +1,5 @@
 import asyncio
 
-import pytest
-
 from dory.adapters.mongo import MongoDBAdapter
 from dory.messages import Messages
 from dory.types import ChatRole, MessageType

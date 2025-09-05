@@ -1,5 +1,3 @@
-import pytest
-
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.types import ChatRole, MessageType
 

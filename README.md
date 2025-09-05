@@ -47,7 +47,7 @@ dependencies = [
 
 ```python
 import asyncio
-from dory import Memory, ConversationConfig
+from dory import Memory, Messages, ConversationConfig
 from dory.adapters import MongoDBAdapter
 from dory.types import MessageType, ChatRole
 
@@ -59,7 +59,11 @@ async def main():
         database="myapp",
     )
 
-    memory = Memory(adapter=adapter)
+    # Create Messages service
+    messages = Messages(adapter=adapter)
+
+    # Create Memory facade with dependency injection
+    memory = Memory(messages)
 
     # Get or create a conversation (reuses if within 2 weeks)
     conversation = await memory.get_or_create_conversation(user_id="user_123")
@@ -97,29 +101,36 @@ if __name__ == "__main__":
 ### Memory
 
 ```python
-class Memory:
-    async def get_or_create_conversation(self, user_id: str) -> Conversation:
-        """Get recent conversation or create new one (2-week reuse window)."""
+# Initialize Memory with dependency injection
+adapter = MongoDBAdapter(connection_string="...")
+messages = Messages(adapter=adapter)
+memory = Memory(messages)
 
-    async def add_message(
-        self,
-        conversation_id: str | None = None,
-        message_id: str | None = None,
-        user_id: str = ...,  # required
-        chat_role: ChatRole = ...,  # required
-        content: Any = ...,  # required
-        message_type: MessageType = ...,  # required
-    ) -> Message:
-        """Add a message. If conversation_id is None, a new conversation is created.
-        If message_id is None, an ID is auto-generated.
-        """
+# Memory methods (all require keyword arguments)
+async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
+    """Get recent conversation or create new one (2-week reuse window)."""
 
-    async def get_chat_history(
-        self,
-        conversation_id: str,
-        limit: int = 30
-    ) -> list[dict[str, Any]]:
-        """Get chat history in LangChain/LangGraph format."""
+async def add_message(
+    self,
+    *,
+    conversation_id: str | None = None,
+    message_id: str | None = None,
+    user_id: str,
+    chat_role: ChatRole,
+    content: Any,
+    message_type: MessageType,
+) -> Message:
+    """Add a message. If conversation_id is None, a new conversation is created.
+    If message_id is None, an ID is auto-generated.
+    """
+
+async def get_chat_history(
+    self,
+    *,
+    conversation_id: str,
+    limit: int | None = None
+) -> list[dict[str, Any]]:
+    """Get chat history in LangChain/LangGraph format."""
 ```
 
 ### Message Types
