@@ -33,7 +33,7 @@ class Messages:
             return conversation
         return await self._adapter.create_conversation(user_id=user_id)
 
-    async def get_conversation(self, conversation_id: str) -> Conversation:
+    async def get_conversation(self, *, conversation_id: str) -> Conversation:
         """Fetch a conversation or raise if it does not exist."""
 
         conversation = await self._adapter.get_conversation(conversation_id)
@@ -61,7 +61,7 @@ class Messages:
         )
 
     async def get_chat_history(
-        self, conversation_id: str, *, limit: int | None = None
+        self, *, conversation_id: str, limit: int | None = None
     ) -> list[dict[str, Any]]:
         return await self._adapter.get_chat_history(
             conversation_id=conversation_id,

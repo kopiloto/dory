@@ -60,5 +60,5 @@ async def test_should_return_messages_in_chronological_order_when_history_reques
         message_type=MessageType.REQUEST_RESPONSE,
     )
 
-    history = await service.get_chat_history(conv.id, limit=10)
+    history = await service.get_chat_history(conversation_id=conv.id, limit=10)
     assert history == [{"user": "msg1"}, {"ai": "msg2"}]

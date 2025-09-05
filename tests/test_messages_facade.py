@@ -27,6 +27,6 @@ async def test_should_create_conversation_and_return_history_when_messages_added
         message_type=MessageType.REQUEST_RESPONSE,
     )
 
-    history = await service.get_chat_history(conversation.id)
+    history = await service.get_chat_history(conversation_id=conversation.id)
     assert history[-1] == {"ai": "hi!"}
     assert len(history) == 2

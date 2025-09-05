@@ -13,7 +13,7 @@ async def test_should_raise_not_found_when_conversation_missing() -> None:
     service = Messages(adapter=InMemoryAdapter())
 
     with pytest.raises(ConversationNotFoundError):
-        await service.get_conversation("CONV_nonexistent")
+        await service.get_conversation(conversation_id="CONV_nonexistent")
 
 
 async def test_should_return_last_n_messages_when_limit_is_provided() -> None:
@@ -36,7 +36,7 @@ async def test_should_return_last_n_messages_when_limit_is_provided() -> None:
         )
         await asyncio.sleep(0)
 
-    history = await service.get_chat_history(conversation.id, limit=3)
+    history = await service.get_chat_history(conversation_id=conversation.id, limit=3)
     assert len(history) == 3
     assert history == [
         {"user": "m3"},
@@ -60,5 +60,5 @@ async def test_should_allow_structured_content_when_adding_and_reading_history()
         message_type=MessageType.USER_MESSAGE,
     )
 
-    history = await service.get_chat_history(conversation.id, limit=10)
+    history = await service.get_chat_history(conversation_id=conversation.id, limit=10)
     assert history[-1] == {"user": payload}

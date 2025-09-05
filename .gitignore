@@ -208,3 +208,5 @@ __marimo__/
 
 *.md
 !README.md
+.cursor/
+.gitignore

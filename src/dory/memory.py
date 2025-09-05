@@ -22,8 +22,8 @@ class Memory:
     async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
         return await self._messages.get_or_create_conversation(user_id=user_id)
 
-    async def get_conversation(self, conversation_id: str) -> Conversation:
-        return await self._messages.get_conversation(conversation_id)
+    async def get_conversation(self, *, conversation_id: str) -> Conversation:
+        return await self._messages.get_conversation(conversation_id=conversation_id)
 
     async def add_message(
         self,
@@ -45,6 +45,8 @@ class Memory:
         )
 
     async def get_chat_history(
-        self, conversation_id: str, *, limit: int | None = None
+        self, *, conversation_id: str, limit: int | None = None
     ) -> list[dict[str, Any]]:
-        return await self._messages.get_chat_history(conversation_id, limit=limit)
+        return await self._messages.get_chat_history(
+            conversation_id=conversation_id, limit=limit
+        )
