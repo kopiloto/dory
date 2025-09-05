@@ -1,4 +1,4 @@
-import pytest  # type: ignore[import-not-found]
+import pytest
 
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.messages import Messages

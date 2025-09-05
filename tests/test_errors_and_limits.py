@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 
-import pytest  # type: ignore[import-not-found]
+import pytest
 
 from dory.adapters.in_memory import InMemoryAdapter
 from dory.exceptions import ConversationNotFoundError
@@ -12,7 +12,7 @@ from dory.types import ChatRole, MessageType
 async def test_should_raise_not_found_when_conversation_missing() -> None:
     service = Messages(adapter=InMemoryAdapter())
 
-    with pytest.raises(ConversationNotFoundError):  # type: ignore[attr-defined]
+    with pytest.raises(ConversationNotFoundError):
         await service.get_conversation("CONV_nonexistent")
 
 

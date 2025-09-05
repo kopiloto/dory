@@ -1,6 +1,6 @@
 import asyncio
 
-import pytest  # type: ignore[import-not-found]
+import pytest
 
 from dory.adapters.mongo import MongoDBAdapter
 from dory.messages import Messages

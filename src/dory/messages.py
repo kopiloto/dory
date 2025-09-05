@@ -5,6 +5,7 @@ from typing import Any
 
 from .adapters.base import StorageAdapter
 from .config import ConversationConfig
+from .exceptions import ConversationNotFoundError
 from .models import Conversation, Message
 from .types import ChatRole, MessageType
 
@@ -37,8 +38,6 @@ class Messages:
 
         conversation = await self._adapter.get_conversation(conversation_id)
         if conversation is None:
-            from .exceptions import ConversationNotFoundError
-
             raise ConversationNotFoundError(conversation_id)
         return conversation
 

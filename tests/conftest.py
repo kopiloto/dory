@@ -17,9 +17,6 @@ from dory.adapters.mongo import ConversationDocument, MessageDocument, MongoDBAd
 @pytest.fixture(scope="session", autouse=True)
 def mongo_connection_url() -> Generator[str, None, None]:
     """Start a MongoDB Testcontainer and yield the connection URL for the session."""
-    from testcontainers.mongodb import (
-        MongoDbContainer,
-    )
 
     with MongoDbContainer() as mongo:
         yield (
