@@ -60,7 +60,8 @@ class Messages:
     ) -> list[dict[str, Any]]:
         """Get the chat history for a conversation."""
         conversation = await self.get_conversation(conversation_id=conversation_id)
+        effective_limit = limit if (limit is not None) else self._config.history_limit
         return await conversation.get_chat_history(
             adapter=self._adapter,
-            limit=limit or self._config.history_limit,
+            limit=effective_limit,
         )

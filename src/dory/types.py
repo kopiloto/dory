@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import Final
 
-__all__: Final = [
+__all__: Final = (
     "ChatRole",
     "MessageType",
-]
+)
 
 
 class ChatRole(str, Enum):
