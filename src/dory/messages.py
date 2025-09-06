@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from .adapters.base import StorageAdapter
 from .config import ConversationConfig
-from .exceptions import ConversationNotFoundError
 from .models import Conversation, Message
 from .types import ChatRole, MessageType
 
@@ -22,24 +20,19 @@ class Messages:
         self._config = config or ConversationConfig()
 
     async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
-        # Determine the earliest timestamp that still falls inside the
-        # inactivity window. Any conversation whose `updated_at` is older than
-        # this value is considered stale and will not be reused.
-        reuse_since = datetime.now(UTC) - timedelta(days=self._config.reuse_window_days)
-        conversation = await self._adapter.find_recent_conversation(
-            user_id=user_id, since=reuse_since
+        """Get a recent conversation or create a new one."""
+        return await Conversation.get_or_create(
+            user_id=user_id,
+            adapter=self._adapter,
+            config=self._config,
         )
-        if conversation:
-            return conversation
-        return await self._adapter.create_conversation(user_id=user_id)
 
     async def get_conversation(self, *, conversation_id: str) -> Conversation:
         """Fetch a conversation or raise if it does not exist."""
-
-        conversation = await self._adapter.get_conversation(conversation_id)
-        if conversation is None:
-            raise ConversationNotFoundError(conversation_id)
-        return conversation
+        return await Conversation.get_by_id(
+            conversation_id=conversation_id,
+            adapter=self._adapter,
+        )
 
     async def add_message(
         self,
@@ -51,7 +44,9 @@ class Messages:
         content: Any,
         message_type: MessageType,
     ) -> Message:
-        return await self._adapter.add_message(
+        """Add a new message to a conversation."""
+        return await Message.create(
+            adapter=self._adapter,
             conversation_id=conversation_id,
             message_id=message_id,
             user_id=user_id,
@@ -63,7 +58,9 @@ class Messages:
     async def get_chat_history(
         self, *, conversation_id: str, limit: int | None = None
     ) -> list[dict[str, Any]]:
-        return await self._adapter.get_chat_history(
-            conversation_id=conversation_id,
+        """Get the chat history for a conversation."""
+        conversation = await self.get_conversation(conversation_id=conversation_id)
+        return await conversation.get_chat_history(
+            adapter=self._adapter,
             limit=limit or self._config.history_limit,
         )

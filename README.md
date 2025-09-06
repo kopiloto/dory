@@ -47,7 +47,7 @@ dependencies = [
 
 ```python
 import asyncio
-from dory import Memory, Messages, ConversationConfig
+from dory import Messages, ConversationConfig
 from dory.adapters import MongoDBAdapter
 from dory.types import MessageType, ChatRole
 
@@ -62,14 +62,11 @@ async def main():
     # Create Messages service
     messages = Messages(adapter=adapter)
 
-    # Create Memory facade with dependency injection
-    memory = Memory(messages)
-
     # Get or create a conversation (reuses if within 2 weeks)
-    conversation = await memory.get_or_create_conversation(user_id="user_123")
+    conversation = await messages.get_or_create_conversation(user_id="user_123")
 
     # Add a user message
-    await memory.add_message(
+    await messages.add_message(
         conversation_id=conversation.id,
         user_id="user_123",
         chat_role=ChatRole.USER,
@@ -78,7 +75,7 @@ async def main():
     )
 
     # Add an AI response
-    await memory.add_message(
+    await messages.add_message(
         conversation_id=conversation.id,
         user_id="user_123",
         chat_role=ChatRole.AI,
@@ -87,7 +84,7 @@ async def main():
     )
 
     # Get chat history for LangChain/LangGraph
-    chat_history = await memory.get_chat_history(conversation.id, limit=30)
+    chat_history = await messages.get_chat_history(conversation.id, limit=30)
     # Returns list[dict[str, Any]]; content can be string or structured
     # E.g. [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
 
@@ -98,15 +95,14 @@ if __name__ == "__main__":
 
 ## Core
 
-### Memory
+### Messages
 
 ```python
-# Initialize Memory with dependency injection
+# Initialize Messages with adapter
 adapter = MongoDBAdapter(connection_string="...")
 messages = Messages(adapter=adapter)
-memory = Memory(messages)
 
-# Memory methods (all require keyword arguments)
+# Messages methods (all require keyword arguments)
 async def get_or_create_conversation(self, *, user_id: str) -> Conversation:
     """Get recent conversation or create new one (2-week reuse window)."""
 
@@ -153,7 +149,7 @@ Both `conversation_id` and `message_id` can be provided. If omitted:
 ```python
 class ChatRole(str, Enum):
     USER = "user"
-    HUMAN = "human"  # Legacy support
+    HUMAN = "human"
     AI = "ai"
 ```
 
