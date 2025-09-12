@@ -1,8 +1,8 @@
 import asyncio
 
-from dory.adapters.mongo import MongoDBAdapter
+from dory import ChatRole, MessageType
 from dory.messages import Messages
-from dory.types import ChatRole, MessageType
+from dory.messages.adapters import MongoDBAdapter
 
 
 async def test_should_update_timestamp_and_reuse_when_message_added(

@@ -3,8 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Protocol
 
+from ...common.types import ChatRole, MessageType
 from ..models import Conversation, Message
-from ..types import ChatRole, MessageType
 
 
 class StorageAdapter(Protocol):

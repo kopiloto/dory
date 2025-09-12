@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
-from ..types import ChatRole, MessageType
+from ...common.types import ChatRole, MessageType
 
 if TYPE_CHECKING:
     from ..adapters.base import StorageAdapter

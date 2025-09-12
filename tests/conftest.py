@@ -9,7 +9,11 @@ from mongoengine_plus.aio.utils import (
     create_awaitable,
 )
 
-from dory.adapters.mongo import ConversationDocument, MessageDocument, MongoDBAdapter
+from dory.messages.adapters.mongo import (
+    ConversationDocument,
+    MessageDocument,
+    MongoDBAdapter,
+)
 
 
 @pytest.fixture(scope="session", autouse=True)

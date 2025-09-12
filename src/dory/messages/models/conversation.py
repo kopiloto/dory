@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, Field
 
-from ..exceptions import ConversationNotFoundError
+from ...common.exceptions import ConversationNotFoundError
 
 if TYPE_CHECKING:
     from ..adapters.base import StorageAdapter

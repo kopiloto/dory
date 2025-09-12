@@ -1,5 +1,5 @@
-from dory.adapters.in_memory import InMemoryAdapter
-from dory.types import ChatRole, MessageType
+from dory import ChatRole, MessageType
+from dory.messages.adapters import InMemoryAdapter
 
 
 async def test_should_reuse_conversation_when_within_reuse_window() -> None:

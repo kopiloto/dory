@@ -14,9 +14,9 @@ from mongoengine_plus.aio import AsyncDocument
 from mongoengine_plus.models import BaseModel
 from mongoengine_plus.models.event_handlers import updated_at
 
+from ...common.types import ChatRole, MessageType
 from ..config import ConversationConfig
 from ..models import Conversation, Message
-from ..types import ChatRole, MessageType
 from .base import StorageAdapter
 from .utils import generate_prefixed_id, history_item
 
