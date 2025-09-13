@@ -5,28 +5,16 @@ from __future__ import annotations
 from typing import Any
 
 from .adapters.base import MemoryAdapter
-from .config import EmbeddingsConfig
 
 __all__ = ["Embeddings"]
 
 
 class Embeddings:
-    """High-level embeddings service for memory and vector search management."""
+    """Embeddings service for memory and vector search management."""
 
-    def __init__(
-        self,
-        adapter: MemoryAdapter | None = None,
-        config: EmbeddingsConfig | None = None,
-    ) -> None:
-        """Initialize the embeddings service.
-
-        Args:
-            adapter: Memory adapter to use. If None, creates default from config
-            config: Configuration for the service
-        """
-        self._config = config or EmbeddingsConfig()
+    def __init__(self, adapter: MemoryAdapter) -> None:
+        """Initialize the embeddings service with a memory adapter."""
         self._adapter = adapter
-        # TODO: Implement _create_default_adapter in Phase 3
 
     async def remember(
         self,
@@ -37,8 +25,12 @@ class Embeddings:
         metadata: dict[str, Any] | None = None,
     ) -> str:
         """Process and store content as a memory."""
-        # TODO: Implement in Phase 3
-        raise NotImplementedError("Will be implemented in Phase 3")
+        return await self._adapter.add_memory(
+            content=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            metadata=metadata,
+        )
 
     async def store_embedding(
         self,
@@ -50,8 +42,13 @@ class Embeddings:
         metadata: dict[str, Any] | None = None,
     ) -> str:
         """Store raw content as embedding for vector search."""
-        # TODO: Implement in Phase 3
-        raise NotImplementedError("Will be implemented in Phase 3")
+        return await self._adapter.add_embedding(
+            content=content,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            message_id=message_id,
+            metadata=metadata,
+        )
 
     async def recall(
         self,
@@ -59,11 +56,15 @@ class Embeddings:
         *,
         user_id: str,
         conversation_id: str | None = None,
-        limit: int | None = None,
+        limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Retrieve relevant memories for a query."""
-        # TODO: Implement in Phase 3
-        raise NotImplementedError("Will be implemented in Phase 3")
+        return await self._adapter.search_memories(
+            query=query,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            limit=limit,
+        )
 
     async def search_embeddings(
         self,
@@ -74,8 +75,12 @@ class Embeddings:
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Search for similar content using vector similarity."""
-        # TODO: Implement in Phase 3
-        raise NotImplementedError("Will be implemented in Phase 3")
+        return await self._adapter.search_embeddings(
+            query=query,
+            user_id=user_id,
+            conversation_id=conversation_id,
+            limit=limit,
+        )
 
     async def forget(
         self,
@@ -85,5 +90,8 @@ class Embeddings:
         memory_ids: list[str] | None = None,
     ) -> int:
         """Delete memories based on filters."""
-        # TODO: Implement in Phase 3
-        raise NotImplementedError("Will be implemented in Phase 3")
+        return await self._adapter.delete_memories(
+            user_id=user_id,
+            conversation_id=conversation_id,
+            memory_ids=memory_ids,
+        )

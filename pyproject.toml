@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 authors = [{ name = "Kopiloto Team", email = "kopiloto@kavak.com" }]
 
 # Core runtime dependencies (MongoDB + async support)
-dependencies = ["mongoengine-plus>=1.2.0", "pydantic>=2.5.0"]
+dependencies = ["mongoengine-plus>=1.2.0", "pydantic>=2.5.0", "mem0ai>=0.0.20"]
 license = { text = "MIT" }
 keywords = ["ai", "conversation", "messages", "mongodb"]
 
