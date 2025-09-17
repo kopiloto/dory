@@ -1,6 +1,6 @@
-from dory.adapters.in_memory import InMemoryAdapter
+from dory import ChatRole, MessageType
 from dory.messages import Messages
-from dory.types import ChatRole, MessageType
+from dory.messages.adapters import InMemoryAdapter
 
 
 async def test_should_create_conversation_and_return_history_when_messages_added() -> (

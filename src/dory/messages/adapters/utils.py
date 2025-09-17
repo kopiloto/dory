@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from ..types import ChatRole
+from ...common.types import ChatRole
 
 __all__ = [
     "generate_prefixed_id",

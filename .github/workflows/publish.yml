@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/dory
+      url: https://pypi.org/p/dory-ai
     permissions:
       contents: read
       id-token: write
@@ -39,7 +39,7 @@ jobs:
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dory-dist
+          name: dory-ai-dist
           path: dist/*
 
       - name: Publish to PyPI

@@ -1,18 +1,32 @@
 # Dory
 
-## Messages Library for Conversational AI
+## AI Memory & Conversation Management Library
 
-A library for managing conversation history in AI-powered applications
-for reusability across projects.
+A library for managing conversation history and memory in AI-powered
+applications, designed for reusability across projects.
 
 ## Overview
 
-Dory messages provides simple, reliable conversation and message management with:
+Dory provides two core services for AI applications:
+
+### **Messages Service**
+
+Simple, reliable conversation and message management with:
 
 - **Automatic Conversation Management**: Reuses conversations within a 2-week window
 - **Message Persistence**: Stores user messages and AI responses
 - **LangChain/LangGraph Integration**: Returns chat history in the required format
-- **MongoDB Support**: MongoDB only (for now)
+- **MongoDB Support**: Production-ready persistence
+
+### **Embeddings Service**
+
+Advanced memory and vector search capabilities with:
+
+- **Semantic Memory Storage**: Store and retrieve contextual memories
+- **Vector Search**: Find relevant information using similarity search
+- **Raw Embeddings**: Store and search unprocessed content for retrieval
+- **Multiple Backends**: Support for Chroma (local) and MongoDB Atlas
+- **Powered by Mem0**: Built on top of the robust Mem0 library
 
 ## Installation
 
@@ -38,21 +52,23 @@ pip install dory
 ```toml
 [project]
 dependencies = [
-    "dory>=0.0.1",
+    "dory>=0.1.0",
     # ... other dependencies
 ]
 ```
 
 ## Quick Start
 
+### Messages Service
+
 ```python
 import asyncio
-from dory import Messages, ConversationConfig
-from dory.adapters import MongoDBAdapter
-from dory.types import MessageType, ChatRole
+from dory.messages import Messages
+from dory.messages.adapters.mongo import MongoDBAdapter
+from dory.common import MessageType, ChatRole
 
 
-async def main():
+async def messages_example():
     # Initialize with MongoDB
     adapter = MongoDBAdapter(
         connection_string="mongodb://localhost:27017/myapp",
@@ -84,18 +100,71 @@ async def main():
     )
 
     # Get chat history for LangChain/LangGraph
-    chat_history = await messages.get_chat_history(conversation.id, limit=30)
-    # Returns list[dict[str, Any]]; content can be string or structured
-    # E.g. [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
+    chat_history = await messages.get_chat_history(
+        conversation_id=conversation.id,
+        limit=30
+    )
+    # Returns: [{"user": "What's the weather like?"}, {"ai": "It's sunny today!"}]
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(messages_example())
 ```
 
-## Core
+### Embeddings Service
 
-### Messages
+```python
+import asyncio
+from dory.embeddings import build_embeddings
+
+
+async def embeddings_example():
+    # Initialize with Chroma (local vector store)
+    embeddings = build_embeddings(
+        api_key="your-openai-api-key",  # Required for OpenAI embeddings
+        store="chroma",
+        store_path="./chroma_db",
+        collection="my_memories"
+    )
+
+    # Store contextual memories
+    memory_id = await embeddings.remember(
+        content="User prefers Python over Java",
+        user_id="user_123",
+        conversation_id="conv_abc",
+        metadata={"topic": "preferences"}
+    )
+
+    # Search for relevant memories
+    memories = await embeddings.recall(
+        query="What programming languages does the user like?",
+        user_id="user_123",
+        limit=5
+    )
+    # Returns memories with relevance scores
+
+    # Store raw embeddings for retrieval
+    embedding_id = await embeddings.store_embedding(
+        content="Python is a high-level programming language",
+        user_id="user_123",
+        metadata={"source": "documentation"}
+    )
+
+    # Search embeddings by similarity
+    results = await embeddings.search_embeddings(
+        query="Tell me about Python",
+        user_id="user_123",
+        limit=3
+    )
+
+
+if __name__ == "__main__":
+    asyncio.run(embeddings_example())
+```
+
+## API Reference
+
+### Messages Service API
 
 ```python
 # Initialize Messages with adapter
@@ -172,29 +241,130 @@ class Message:
     created_at: datetime
 ```
 
-## MongoDB Configuration
-
-### Adapter Setup
+### Embeddings Service API
 
 ```python
+# Initialize with builder function
+embeddings = build_embeddings(
+    api_key="openai-api-key",           # Optional: for OpenAI embeddings
+    store="chroma",                      # Options: "chroma", "mongodb", "memory"
+    store_path="./chroma_db",           # For local stores
+    connection_string="mongodb://...",  # For MongoDB Atlas
+    collection="memories"                # Collection/index name
+)
+
+# Embeddings methods (all async, require keyword arguments)
+async def remember(
+    self,
+    *,
+    content: str,
+    user_id: str,
+    conversation_id: str | None = None,
+    metadata: dict[str, Any] | None = None
+) -> str:
+    """Store a memory with LLM processing for context extraction."""
+
+async def recall(
+    self,
+    *,
+    query: str,
+    user_id: str,
+    conversation_id: str | None = None,
+    limit: int = 10
+) -> list[dict[str, Any]]:
+    """Search memories using semantic similarity."""
+
+async def forget(
+    self,
+    *,
+    user_id: str,
+    conversation_id: str | None = None,
+    memory_ids: list[str] | None = None
+) -> int:
+    """Delete memories and return count deleted."""
+
+async def store_embedding(
+    self,
+    *,
+    content: str,
+    user_id: str,
+    conversation_id: str | None = None,
+    message_id: str | None = None,
+    metadata: dict[str, Any] | None = None
+) -> str:
+    """Store raw content without LLM processing."""
+
+async def search_embeddings(
+    self,
+    *,
+    query: str,
+    user_id: str,
+    conversation_id: str | None = None,
+    limit: int = 10
+) -> list[dict[str, Any]]:
+    """Search raw embeddings using vector similarity."""
+```
+
+## Configuration
+
+### MongoDB Setup
+
+```python
+# For Messages
 adapter = MongoDBAdapter(
     connection_string="mongodb://localhost:27017",
     database="myapp",
 )
+
+# For Embeddings (MongoDB Atlas with Vector Search)
+embeddings = build_embeddings(
+    api_key="openai-api-key",
+    store="mongodb",
+    connection_string="mongodb+srv://...",
+    collection="memories"
+)
 ```
 
-### Indexes Created
+**Indexes Created:**
 
-**Conversations:**
+- Conversations: `user_id`, `updated_at`
+- Messages: `conversation_id`, `created_at`, compound index
+- Embeddings: Requires MongoDB Atlas Vector Search index
 
-- `user_id`
-- `updated_at`
+### Chroma Setup
 
-**Messages:**
+```python
+embeddings = build_embeddings(
+    api_key="openai-api-key",
+    store="chroma",
+    store_path="./chroma_db",  # Local directory
+    collection="my_memories"
+)
+```
 
-- `conversation_id`
-- `created_at`
-- `{conversation_id: 1, created_at: 1}` (compound)
+### In-Memory Setup (Testing)
+
+```python
+# For testing - no persistence
+embeddings = build_embeddings(
+    store="memory",
+    collection="test_memories"
+)
+```
+
+### Testing
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov
+
+# Run specific service tests
+uv run pytest tests/messages/
+uv run pytest tests/embeddings/
+```
 
 ## License
 

@@ -1,13 +1,11 @@
-__version__ = "0.0.1"
+__version__ = "0.1.0"
 
-# Public re-exports for convenience
-from .config import ConversationConfig
-from .messages import Messages
-from .types import ChatRole, MessageType
+from .common.exceptions import DoryError
+from .common.types import ChatRole, MessageType
 
 __all__ = [
-    "Messages",
-    "ConversationConfig",
+    #
     "ChatRole",
     "MessageType",
+    "DoryError",
 ]

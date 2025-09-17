@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from ..common.types import ChatRole, MessageType
 from .adapters.base import StorageAdapter
 from .config import ConversationConfig
 from .models import Conversation, Message
-from .types import ChatRole, MessageType
 
 __all__ = ["Messages"]
 

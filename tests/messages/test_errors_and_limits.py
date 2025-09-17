@@ -3,10 +3,10 @@ from typing import Any
 
 import pytest
 
-from dory.adapters.in_memory import InMemoryAdapter
-from dory.exceptions import ConversationNotFoundError
+from dory import ChatRole, DoryError, MessageType
+from dory.common.exceptions import ConversationNotFoundError
 from dory.messages import Messages
-from dory.types import ChatRole, MessageType
+from dory.messages.adapters import InMemoryAdapter
 
 
 async def test_should_raise_not_found_when_conversation_missing() -> None:

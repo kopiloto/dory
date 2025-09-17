@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from ...common.types import ChatRole, MessageType
 from ..config import ConversationConfig
 from ..models import Conversation, Message
-from ..types import ChatRole, MessageType
 from .base import StorageAdapter
 from .utils import generate_prefixed_id, history_item
 
