@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any, Protocol
 
 __all__ = ["MemoryAdapter"]
@@ -29,7 +28,6 @@ class MemoryAdapter(Protocol):
         user_id: str,
         conversation_id: str | None = None,
         limit: int = 10,
-        since: datetime | None = None,
     ) -> list[dict[str, Any]]:
         """Search for relevant memories matching the query."""
         ...

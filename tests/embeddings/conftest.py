@@ -104,27 +104,24 @@ def mock_mem0():
 def embeddings_config():
     """Basic configuration for embeddings tests."""
     return EmbeddingsConfig(
-        llm_provider="openai",
-        vector_store_provider="mongodb",
-        collection_name="test_memories",
-        advanced_config={
-            "vector_store": {
-                "provider": "mongodb_atlas",
-                "config": {
-                    "connection_string": "mongodb://localhost:27017/test",
-                    "database_name": "test_db",
-                    "collection_name": "test_memories",
-                    "index_name": "test_index",
-                    "embedding_field": "embedding",
-                    "text_field": "text",
-                },
-            },
-            "llm": {
-                "provider": "openai",
-                "config": {"api_key": "test-api-key", "model": "gpt-4"},
-            },
-        },
+        store="memory",
+        collection="test_memories",
     )
+
+
+@pytest.fixture
+def test_embeddings():
+    """Build in-memory embeddings service for testing.
+
+    This creates an embeddings service that stores everything in memory,
+    perfect for unit tests and development.
+
+    Returns:
+        In-memory Embeddings service
+    """
+    from src.dory.embeddings import build_embeddings
+
+    return build_embeddings(store="memory", collection="test_memories")
 
 
 @pytest.fixture

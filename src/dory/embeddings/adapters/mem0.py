@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
-from datetime import datetime
 from typing import Any
 
 from mem0 import Memory
@@ -17,42 +15,39 @@ __all__ = ["Mem0Adapter"]
 class Mem0Adapter(MemoryAdapter):
     """Adapter that wraps mem0 for both memories and embeddings."""
 
-    def __init__(self, config: EmbeddingsConfig) -> None:
-        """Initialize the Mem0 adapter with configuration."""
+    def __init__(self, config: EmbeddingsConfig, memory: Memory) -> None:
+        """Initialize the Mem0 adapter with dependencies."""
+
         self._config = config
-        self._memory = self._init_memory()
+        self._memory = memory
         self._embeddings_cache: dict[str, str] = {}
 
-    def _init_memory(self) -> Memory:
-        """Initialize mem0 Memory with configuration."""
-        mem0_config: dict[str, Any] = {
-            "llm": {
-                "provider": self._config.llm_provider,
-            },
-            "vector_store": {
-                "provider": self._config.vector_store_provider,
-                "config": {
-                    "collection_name": self._config.collection_name,
-                },
-            },
+    def _extract_results_list(self, response: dict[str, Any]) -> list[dict[str, Any]]:
+        """Extract the results list from Mem0's response dictionary."""
+
+        if not isinstance(response, dict):
+            return []
+        return response.get("results", [])
+
+    def _result_to_dict(self, item: dict[str, Any]) -> dict[str, Any]:
+        """Normalize a Mem0 result dict."""
+
+        return {
+            "id": item.get("id", ""),
+            "memory": item.get("memory", ""),
+            "score": item.get("score", 0.0),
+            "metadata": item.get("metadata") or {},
+            "created_at": item.get("created_at"),
         }
 
-        if self._config.llm_model:
-            if "llm" in mem0_config and isinstance(mem0_config["llm"], dict):
-                mem0_config["llm"]["config"] = {"model": self._config.llm_model}
+    def _extract_id_from_result(self, result: dict[str, Any]) -> str:
+        """Extract ID from Mem0's add() response."""
 
-        if self._config.advanced_config:
-            for key, value in self._config.advanced_config.items():
-                if key in mem0_config:
-                    existing = mem0_config[key]
-                    if isinstance(existing, dict) and isinstance(value, dict):
-                        existing.update(value)
-                    else:
-                        mem0_config[key] = value
-                else:
-                    mem0_config[key] = value
+        results = result.get("results", [])
+        if results and isinstance(results, list) and results[0].get("id"):
+            return results[0]["id"]
 
-        return Memory(config=mem0_config)
+        raise ValueError(f"Mem0 did not return a valid ID. Response: {result}")
 
     async def add_memory(
         self,
@@ -63,6 +58,7 @@ class Mem0Adapter(MemoryAdapter):
         metadata: dict[str, Any] | None = None,
     ) -> str:
         """Add a memory to the store and return its ID."""
+
         mem0_metadata = metadata or {}
         if conversation_id:
             mem0_metadata["conversation_id"] = conversation_id
@@ -73,12 +69,7 @@ class Mem0Adapter(MemoryAdapter):
             metadata=mem0_metadata,
         )
 
-        if isinstance(result, dict) and "id" in result:
-            return result["id"]
-        elif isinstance(result, list) and result:
-            return result[0].get("id", "")
-        else:
-            return self._generate_id(content, user_id)
+        return self._extract_id_from_result(result)
 
     async def search_memories(
         self,
@@ -87,41 +78,60 @@ class Mem0Adapter(MemoryAdapter):
         user_id: str,
         conversation_id: str | None = None,
         limit: int = 10,
-        since: datetime | None = None,
     ) -> list[dict[str, Any]]:
         """Search for relevant memories matching the query."""
-        results = self._memory.search(
+
+        raw_results = self._memory.search(
             query=query,
             user_id=user_id,
             limit=limit,
         )
 
-        results = [
-            r for r in results if r.get("metadata", {}).get("type") != "raw_embedding"
+        results_list = self._extract_results_list(raw_results)
+        memories = [self._result_to_dict(r) for r in results_list]
+
+        filtered_results = self._apply_memory_filters(
+            memories,
+            conversation_id=conversation_id,
+        )
+
+        return self._format_memory_results(filtered_results)
+
+    def _apply_memory_filters(
+        self,
+        results: list[dict[str, Any]],
+        conversation_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Apply filters to memory search results."""
+
+        filtered = [
+            result
+            for result in results
+            if result and result.get("metadata", {}).get("type") != "raw_embedding"
         ]
 
         if conversation_id:
-            results = [
-                r
-                for r in results
-                if r.get("metadata", {}).get("conversation_id") == conversation_id
+            filtered = [
+                result
+                for result in filtered
+                if result.get("metadata", {}).get("conversation_id") == conversation_id
             ]
 
-        if since:
-            results = [
-                r
-                for r in results
-                if self._parse_timestamp(r.get("created_at")) >= since
-            ]
+        return filtered
+
+    def _format_memory_results(
+        self, results: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        """Format memory results for output."""
 
         return [
             {
-                "id": r.get("id", ""),
-                "content": r.get("memory", ""),
-                "score": r.get("score", 0.0),
-                "metadata": r.get("metadata", {}),
+                "id": result.get("id", ""),
+                "content": result.get("memory", ""),
+                "score": result.get("score", 0.0),
+                "metadata": result.get("metadata", {}),
             }
-            for r in results
+            for result in results
         ]
 
     async def delete_memories(
@@ -132,16 +142,13 @@ class Mem0Adapter(MemoryAdapter):
         memory_ids: list[str] | None = None,
     ) -> int:
         """Delete memories based on filters and return count."""
+
         deleted_count = 0
 
         if memory_ids:
             for memory_id in memory_ids:
-                try:
-                    self._memory.delete(memory_id=memory_id)
-                    deleted_count += 1
-                except (KeyError, ValueError):
-                    # Memory doesn't exist, skip silently
-                    pass
+                self._memory.delete(memory_id=memory_id)
+                deleted_count += 1
         else:
             all_memories = self._memory.get_all(user_id=user_id)
 
@@ -153,11 +160,8 @@ class Mem0Adapter(MemoryAdapter):
                     ):
                         continue
 
-                try:
-                    self._memory.delete(memory_id=memory["id"])
-                    deleted_count += 1
-                except (KeyError, ValueError):
-                    pass
+                self._memory.delete(memory_id=memory["id"])
+                deleted_count += 1
 
         return deleted_count
 
@@ -185,15 +189,10 @@ class Mem0Adapter(MemoryAdapter):
             messages=content,
             user_id=user_id,
             metadata=embedding_metadata,
+            infer=False,  # This tells mem0 to store raw content
         )
 
-        if isinstance(result, dict) and "id" in result:
-            embedding_id = result["id"]
-        elif isinstance(result, list) and result:
-            embedding_id = result[0].get("id", "")
-        else:
-            embedding_id = self._generate_id(content, user_id)
-
+        embedding_id = self._extract_id_from_result(result)
         self._embeddings_cache[embedding_id] = content
 
         return embedding_id
@@ -207,15 +206,34 @@ class Mem0Adapter(MemoryAdapter):
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         """Search for similar embeddings using vector similarity."""
-        results = self._memory.search(
+
+        raw_results = self._memory.search(
             query=query,
             user_id=user_id,
-            limit=limit * 2,
+            limit=limit,
         )
 
+        results_list = self._extract_results_list(raw_results)
+        embeddings = [self._result_to_dict(r) for r in results_list]
+
+        return self._filter_and_format_embeddings(
+            embeddings,
+            conversation_id=conversation_id,
+            limit=limit,
+        )
+
+    def _filter_and_format_embeddings(
+        self,
+        results: list[dict[str, Any]],
+        conversation_id: str | None = None,
+        limit: int = 10,
+    ) -> list[dict[str, Any]]:
+        """Filter and format embedding search results."""
+
         embeddings = []
-        for r in results:
-            metadata = r.get("metadata", {})
+
+        for result in results:
+            metadata = result.get("metadata", {})
 
             if metadata.get("type") != "raw_embedding":
                 continue
@@ -225,9 +243,9 @@ class Mem0Adapter(MemoryAdapter):
 
             embeddings.append(
                 {
-                    "id": r.get("id", ""),
-                    "content": r.get("memory", ""),
-                    "score": r.get("score", 0.0),
+                    "id": result.get("id", ""),
+                    "content": result.get("memory", ""),
+                    "score": result.get("score", 0.0),
                     "metadata": metadata,
                 }
             )
@@ -236,20 +254,3 @@ class Mem0Adapter(MemoryAdapter):
                 break
 
         return embeddings
-
-    def _generate_id(self, content: str, user_id: str) -> str:
-        """Generate a deterministic ID for content."""
-        hash_input = f"{user_id}:{content}".encode()
-        return hashlib.sha256(hash_input).hexdigest()[:16]
-
-    def _parse_timestamp(self, timestamp: Any) -> datetime:
-        """Parse timestamp from various formats."""
-        if isinstance(timestamp, datetime):
-            return timestamp
-        elif isinstance(timestamp, str):
-            try:
-                return datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
-            except (ValueError, TypeError):
-                return datetime.min
-        else:
-            return datetime.min

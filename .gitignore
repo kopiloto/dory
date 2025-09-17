@@ -210,3 +210,5 @@ __marimo__/
 !README.md
 .cursor/
 .gitignore
+
+:memory:
