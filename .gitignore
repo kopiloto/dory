@@ -208,6 +208,8 @@ __marimo__/
 
 *.md
 !README.md
+!CHANGELOG.md
+!LICENSE
 .cursor/
 .gitignore
 
