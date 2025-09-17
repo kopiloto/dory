@@ -1,5 +1,5 @@
 [project]
-name = "dory"
+name = "dory-ai"
 dynamic = ["version"]
 description = "A library for managing conversation history in AI-powered applications for reusability across projects."
 readme = "README.md"
