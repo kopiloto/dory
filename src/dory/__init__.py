@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from .common.exceptions import DoryError
 from .common.types import ChatRole, MessageType

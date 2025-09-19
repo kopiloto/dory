@@ -52,7 +52,7 @@ pip install dory
 ```toml
 [project]
 dependencies = [
-    "dory>=0.1.0",
+    "dory>=0.1.1",
     # ... other dependencies
 ]
 ```
@@ -164,7 +164,7 @@ if __name__ == "__main__":
 
 ## API Reference
 
-### Messages Service API
+### Messages Service Ag
 
 ```python
 # Initialize Messages with adapter
