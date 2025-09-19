@@ -45,3 +45,18 @@ First public release of Dory - AI Memory & Conversation Management Library.
 This is the first public release. We welcome feedback and contributions!
 
 [0.1.0]: https://github.com/kopiloto/dory/releases/tag/v0.1.0
+
+---
+
+## [0.1.1] - 2025-09-19
+
+### Added
+
+- **Typing Support**: Added `py.typed` marker file to expose inline type
+hints to type checkers (PEP 561).
+
+### Fixed
+
+- **Strict Type Checking**: Resolved `mypy --strict` errors by:
+  - Casting Mem0 response lists in `Mem0Adapter` for accurate types.
+  - Ensuring ID extraction returns `str`.

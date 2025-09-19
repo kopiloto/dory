@@ -27,7 +27,9 @@ class Mem0Adapter(MemoryAdapter):
 
         if not isinstance(response, dict):
             return []
-        return response.get("results", [])
+        from typing import cast
+
+        return cast(list[dict[str, Any]], response.get("results", []))
 
     def _result_to_dict(self, item: dict[str, Any]) -> dict[str, Any]:
         """Normalize a Mem0 result dict."""
@@ -45,7 +47,7 @@ class Mem0Adapter(MemoryAdapter):
 
         results = result.get("results", [])
         if results and isinstance(results, list) and results[0].get("id"):
-            return results[0]["id"]
+            return str(results[0]["id"])
 
         raise ValueError(f"Mem0 did not return a valid ID. Response: {result}")
 
