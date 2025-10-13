@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 
 from dory.common.types import ChatRole, MessageType
 from dory.messages.models import Message
-from dory.users_summaries import UserSummary, UserSummaryAgent
+from dory.users_summaries import UserSummaryAgent, UserSummaryModel
 from dory.users_summaries.prompt_modules import UserSummaryGenerationOutput
 
 
@@ -47,7 +47,7 @@ async def test_should_generate_summary_from_messages_without_existing_summary(
 async def test_should_include_existing_summary_when_provided(
     sample_messages, sample_actions, monkeypatch
 ):
-    existing_summary = UserSummary(
+    existing_summary = UserSummaryModel(
         id="SUMM_001",
         user_id="user_123",
         content="User previously showed interest in sedans.",

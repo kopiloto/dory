@@ -1,14 +1,17 @@
 from .adapters import InMemoryAdapter, MongoDBAdapter, UserSummaryAdapter
 from .agent import UserSummaryAgent
-from .models import UserAction, UserSummary
-from .service import UserSummaries
+from .config import UserSummaryConfig
+from .models import UserAction
+from .models import UserSummary as UserSummaryModel
+from .service import UserSummary
 
 __all__ = [
-    "UserSummaries",
     "UserSummary",
+    "UserSummaryModel",
     "UserAction",
     "UserSummaryAdapter",
     "UserSummaryAgent",
+    "UserSummaryConfig",
     "InMemoryAdapter",
     "MongoDBAdapter",
 ]
