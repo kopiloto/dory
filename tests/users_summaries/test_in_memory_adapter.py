@@ -1,6 +1,6 @@
 from dory.messages.adapters.utils import generate_prefixed_id
-from dory.usersummaries.adapters import InMemoryAdapter
-from dory.usersummaries.models import UserAction
+from dory.users_summaries.adapters import InMemoryAdapter
+from dory.users_summaries.models import UserAction
 
 
 async def test_should_create_and_retrieve_user_summary() -> None:

@@ -1,5 +1,5 @@
 from .action import UserAction
-from .usersummary import UserSummary
+from .users_summaries import UserSummary
 
 __all__ = [
     "UserSummary",
