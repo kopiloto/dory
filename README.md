@@ -7,15 +7,17 @@ applications, designed for reusability across projects.
 
 ## Overview
 
-Dory provides two core services for AI applications:
+Dory provides three core services for AI applications:
 
 ### **Messages Service**
 
 Simple, reliable conversation and message management with:
 
-- **Automatic Conversation Management**: Reuses conversations within a 2-week window
+- **Automatic Conversation Management**: Reuses conversations within a 2-week
+  window
 - **Message Persistence**: Stores user messages and AI responses
-- **LangChain/LangGraph Integration**: Returns chat history in the required format
+- **LangChain/LangGraph Integration**: Returns chat history in the required
+  format
 - **MongoDB Support**: Production-ready persistence
 
 ### **Embeddings Service**
@@ -27,6 +29,14 @@ Advanced memory and vector search capabilities with:
 - **Raw Embeddings**: Store and search unprocessed content for retrieval
 - **Multiple Backends**: Support for Chroma (local) and MongoDB Atlas
 - **Powered by Mem0**: Built on top of the robust Mem0 library
+
+### **User Summaries Service**
+
+AI-powered user profiling and understanding with:
+
+- **Automatic User Profiling**: Generate comprehensive user summaries using LLM
+- **Smart Action Detection**: Track preferences, facts, and behaviors
+- **Contextual Understanding**: Extract insights from conversation history
 
 ## Installation
 
@@ -52,7 +62,7 @@ pip install dory
 ```toml
 [project]
 dependencies = [
-    "dory>=0.1.1",
+    "dory>=0.2.0",
     # ... other dependencies
 ]
 ```
@@ -160,6 +170,54 @@ async def embeddings_example():
 
 if __name__ == "__main__":
     asyncio.run(embeddings_example())
+```
+
+### User Summaries Service
+
+```python
+import asyncio
+from dory.users_summaries import UserSummaries
+from dory.users_summaries.adapters.mongo import MongoDBAdapter
+
+
+async def user_summaries_example():
+    # Initialize with MongoDB
+    adapter = MongoDBAdapter(
+        connection_string="mongodb://localhost:27017/myapp",
+        database="myapp",
+    )
+
+    # Create UserSummaries service with OpenAI
+    user_summaries = UserSummaries(
+        adapter=adapter,
+        openai_api_key="your-openai-api-key"
+    )
+
+    # Generate or update user summary from conversation
+    summary = await user_summaries.generate_summary(
+        user_id="user_123",
+        conversation_history=[
+            {"role": "user", "content": "I love Python programming"},
+            {"role": "ai", "content": "That's great! Python is versatile."},
+            {"role": "user", "content": "I prefer dark mode in my IDE"},
+        ]
+    )
+
+    # Access user summary and actions
+    print(f"Summary: {summary.summary}")
+    print(f"Actions detected: {len(summary.actions)}")
+
+    for action in summary.actions:
+        print(f"- {action.action_type}: {action.description}")
+
+    # Get existing summary
+    existing = await user_summaries.get_summary(user_id="user_123")
+    if existing:
+        print(f"Last updated: {existing.updated_at}")
+
+
+if __name__ == "__main__":
+    asyncio.run(user_summaries_example())
 ```
 
 ## API Reference
@@ -305,13 +363,76 @@ async def search_embeddings(
     """Search raw embeddings using vector similarity."""
 ```
 
+### User Summaries Service API
+
+```python
+# Initialize with adapter
+adapter = MongoDBAdapter(
+    connection_string="mongodb://localhost:27017",
+    database="myapp",
+)
+user_summaries = UserSummaries(
+    adapter=adapter,
+    openai_api_key="your-openai-api-key"
+)
+
+# User Summaries methods (all async, require keyword arguments)
+async def generate_summary(
+    self,
+    *,
+    user_id: str,
+    conversation_history: list[dict[str, str]]
+) -> UserSummary:
+    """Generate or update user summary from conversation history.
+    Creates new summary or updates existing one with new insights.
+    """
+
+async def get_summary(
+    self,
+    *,
+    user_id: str
+) -> UserSummary | None:
+    """Get existing user summary."""
+
+async def delete_summary(
+    self,
+    *,
+    user_id: str
+) -> bool:
+    """Delete user summary. Returns True if deleted, False if not found."""
+```
+
+### User Summaries Models
+
+```python
+class UserSummary:
+    id: str                # Format: "USR_<uuid>"
+    user_id: str
+    summary: str           # AI-generated summary
+    actions: list[Action]  # Detected preferences, facts, behaviors
+    created_at: datetime
+    updated_at: datetime
+
+class Action:
+    action_type: str       # "preference", "fact", "behavior"
+    description: str       # What was detected
+```
+
 ## Configuration
 
 ### MongoDB Setup
 
 ```python
 # For Messages
-adapter = MongoDBAdapter(
+from dory.messages.adapters.mongo import MongoDBAdapter as MessagesAdapter
+messages_adapter = MessagesAdapter(
+    connection_string="mongodb://localhost:27017",
+    database="myapp",
+)
+
+# For User Summaries
+from dory.users_summaries.adapters.mongo import MongoDBAdapter as SummariesAdapter
+summaries_adapter = SummariesAdapter(
     connection_string="mongodb://localhost:27017",
     database="myapp",
 )
@@ -329,6 +450,7 @@ embeddings = build_embeddings(
 
 - Conversations: `user_id`, `updated_at`
 - Messages: `conversation_id`, `created_at`, compound index
+- User Summaries: `user_id`, `updated_at`
 - Embeddings: Requires MongoDB Atlas Vector Search index
 
 ### Chroma Setup
@@ -352,7 +474,33 @@ embeddings = build_embeddings(
 )
 ```
 
-### Testing
+## Docker Example
+
+A complete working example with Docker Compose is available in
+`examples/docker/`:
+
+```bash
+cd examples/docker
+
+# Copy environment file
+cp env.example .env
+
+# Add your OpenAI API key to .env (optional)
+# OPENAI_API_KEY=your-key-here
+
+# Start services
+docker-compose up --build
+
+# The demo will run automatically, showing all three services in action
+```
+
+The example demonstrates:
+
+- Messages: Conversation management and history
+- Embeddings: Memory storage and retrieval
+- User Summaries: AI-powered user profiling
+
+## Testing
 
 ```bash
 # Run all tests
@@ -364,6 +512,7 @@ uv run pytest --cov
 # Run specific service tests
 uv run pytest tests/messages/
 uv run pytest tests/embeddings/
+uv run pytest tests/users_summaries/
 ```
 
 ## License
