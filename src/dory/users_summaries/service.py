@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
+from ..common.types import ChatRole, MessageType
 from ..messages.adapters.utils import generate_prefixed_id
 from ..messages.models import Message
 from .adapters.base import UserSummaryAdapter
@@ -57,7 +58,27 @@ class UserSummary:
                 return await self._adapter.create_summary(user_id)
             return summary
 
-        messages = [Message.model_validate(msg_dict) for msg_dict in message_dicts]
+        # Convert history format to full messages for the agent
+        messages: list[Message] = []
+        for msg_dict in message_dicts:
+            # History format is {'user': content} or {'assistant': content}
+            for role_str, content in msg_dict.items():
+                chat_role = ChatRole.USER if role_str == "user" else ChatRole.AI
+                message_type = (
+                    MessageType.USER_MESSAGE
+                    if role_str == "user"
+                    else MessageType.REQUEST_RESPONSE
+                )
+                messages.append(
+                    Message(
+                        id=f"temp_{len(messages)}",
+                        conversation_id=conversation_id,
+                        user_id=user_id,
+                        chat_role=chat_role,
+                        content=content,
+                        message_type=message_type,
+                    )
+                )
 
         actions = await self._adapter.get_user_actions(
             user_id=user_id,

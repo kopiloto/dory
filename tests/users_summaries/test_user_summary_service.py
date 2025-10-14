@@ -209,7 +209,12 @@ async def test_should_update_summary_with_agent(sample_messages, monkeypatch):
     mock_agent.generate_summary = AsyncMock(return_value=mock_output)
 
     mock_messages_service = MagicMock()
-    mock_messages_service.get_chat_history = AsyncMock(return_value=sample_messages)
+    # Convert messages to history format that get_chat_history returns
+    history_format = []
+    for msg in sample_messages:
+        role_key = "user" if msg.chat_role == ChatRole.USER else "assistant"
+        history_format.append({role_key: msg.content})
+    mock_messages_service.get_chat_history = AsyncMock(return_value=history_format)
 
     adapter = InMemoryAdapter()
     config = UserSummaryConfig(summary_generation_threshold_messages=3)
@@ -291,7 +296,12 @@ async def test_should_regenerate_summary_when_requested(sample_messages, monkeyp
     mock_agent.generate_summary = AsyncMock(return_value=mock_output)
 
     mock_messages_service = MagicMock()
-    mock_messages_service.get_chat_history = AsyncMock(return_value=sample_messages)
+    # Convert messages to history format that get_chat_history returns
+    history_format = []
+    for msg in sample_messages:
+        role_key = "user" if msg.chat_role == ChatRole.USER else "assistant"
+        history_format.append({role_key: msg.content})
+    mock_messages_service.get_chat_history = AsyncMock(return_value=history_format)
 
     adapter = InMemoryAdapter()
     existing = await adapter.create_summary(user_id="user_123")

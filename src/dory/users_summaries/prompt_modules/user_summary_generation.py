@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 
 from .types import PromptModel, UserSummaryGenerationInput, UserSummaryGenerationOutput
 
@@ -61,7 +61,7 @@ Generate a comprehensive user summary following this structure:
 def create_user_summary_agent(
     api_key: str | None = None,
 ) -> Agent[UserSummaryGenerationInput, UserSummaryGenerationOutput]:
-    model = OpenAIModel(USER_SUMMARY_GENERATION_PROMPT.model)
+    model = OpenAIChatModel(USER_SUMMARY_GENERATION_PROMPT.model)
 
     return Agent(
         model=model,

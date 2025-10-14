@@ -14,6 +14,7 @@ from mongoengine_plus.models import BaseModel
 from mongoengine_plus.models.event_handlers import updated_at
 
 from ...messages.adapters.utils import generate_prefixed_id
+from ..config import UserSummaryConfig
 from ..models import UserAction, UserSummary
 
 __all__ = ["MongoDBAdapter"]
@@ -24,11 +25,10 @@ class UserSummaryDocument(BaseModel, AsyncDocument):
     meta = {
         "collection": "user_summaries",
         "indexes": [
-            "user_id",
             "updated_at",
             {"fields": ["user_id"], "unique": True},
         ],
-        "auto_create_index": True,
+        "auto_create_index": False,
     }
 
     id: str = StringField(primary_key=True)
@@ -51,7 +51,7 @@ class UserActionDocument(BaseModel, AsyncDocument):
             {"fields": ["user_id", "created_at"]},
             {"fields": ["user_id", "action_type"]},
         ],
-        "auto_create_index": True,
+        "auto_create_index": False,
     }
 
     id: str = StringField(primary_key=True)
@@ -64,11 +64,39 @@ class UserActionDocument(BaseModel, AsyncDocument):
 
 
 class MongoDBAdapter:
-    def __init__(self, connection_string: str, database: str) -> None:
-        connect(database, host=connection_string, uuidRepresentation="standard")
+    def __init__(
+        self,
+        config: UserSummaryConfig | None = None,
+        *,
+        use_existing_connection: bool = False,
+        connection_string: str | None = None,
+        database: str | None = None,
+        alias: str = "default",
+        **connect_kwargs: Any,
+    ) -> None:
+        self._config = config or UserSummaryConfig()
+
+        if not use_existing_connection and connection_string:
+            from mongoengine.connection import ConnectionFailure, get_connection
+
+            try:
+                get_connection(alias)
+            except ConnectionFailure:
+                connect(
+                    host=connection_string,
+                    db=database,
+                    alias=alias,
+                    uuidRepresentation="standard",
+                    **connect_kwargs,
+                )
+        self._alias = alias
+
+        # Configure documents to use the specified alias
+        UserSummaryDocument._meta["db_alias"] = alias
+        UserActionDocument._meta["db_alias"] = alias
 
     async def get_summary(self, user_id: str) -> UserSummary | None:
-        doc = await UserSummaryDocument.async_find_one(user_id=user_id)
+        doc = await UserSummaryDocument.objects(user_id=user_id).async_first()
         if not doc:
             return None
 
@@ -94,10 +122,10 @@ class MongoDBAdapter:
         )
         await doc.async_save()
 
-        return UserSummary.model_validate(doc.model_dump())
+        return UserSummary.model_validate(doc, from_attributes=True)
 
     async def update_summary(self, summary: UserSummary) -> UserSummary:
-        doc = await UserSummaryDocument.async_get(summary.id)
+        doc = await UserSummaryDocument.objects(id=summary.id).async_first()
 
         doc.content = summary.content
         doc.metadata = summary.metadata
@@ -107,7 +135,7 @@ class MongoDBAdapter:
 
         await doc.async_save()
 
-        return UserSummary.model_validate(doc.model_dump())
+        return UserSummary.model_validate(doc, from_attributes=True)
 
     async def add_action(self, action: UserAction) -> UserAction:
         doc = UserActionDocument(
@@ -121,7 +149,7 @@ class MongoDBAdapter:
         )
         await doc.async_save()
 
-        return UserAction.model_validate(doc.model_dump())
+        return UserAction.model_validate(doc, from_attributes=True)
 
     async def get_user_actions(
         self,
@@ -134,10 +162,10 @@ class MongoDBAdapter:
             query["action_type"] = action_type
 
         docs = (
-            await UserActionDocument.async_find(**query)
+            await UserActionDocument.objects(**query)
             .order_by("-created_at")
             .limit(limit)
             .async_to_list()
         )
 
-        return [UserAction.model_validate(doc.model_dump()) for doc in docs]
+        return [UserAction.model_validate(doc, from_attributes=True) for doc in docs]

@@ -70,6 +70,7 @@ class MongoDBAdapter(StorageAdapter):
         self,
         config: ConversationConfig | None = None,
         *,
+        use_existing_connection: bool = False,
         connection_string: str | None = None,
         database: str | None = None,
         alias: str = "default",
@@ -77,15 +78,25 @@ class MongoDBAdapter(StorageAdapter):
     ) -> None:
         self._config = config or ConversationConfig()
 
-        if connection_string:
-            connect(
-                host=connection_string,
-                db=database,
-                alias=alias,
-                connectTimeoutMS=self._config.connection_timeout_seconds * 1000,
-                **connect_kwargs,
-            )
+        if not use_existing_connection and connection_string:
+            from mongoengine.connection import ConnectionFailure, get_connection
+
+            try:
+                get_connection(alias)
+            except ConnectionFailure:
+                connect(
+                    host=connection_string,
+                    db=database,
+                    alias=alias,
+                    connectTimeoutMS=self._config.connection_timeout_seconds * 1000,
+                    uuidRepresentation="standard",
+                    **connect_kwargs,
+                )
         self._alias = alias
+
+        # Configure documents to use the specified alias
+        ConversationDocument._meta["db_alias"] = alias
+        MessageDocument._meta["db_alias"] = alias
 
     @staticmethod
     def _to_conversation(doc: ConversationDocument) -> Conversation:
