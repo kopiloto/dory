@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-01-17
+
+### Fixed
+
+- **MongoDB Provider**: Changed provider name from `mongodb_atlas` to
+  `mongodb` in embeddings config to ensure compatibility with mem0 library
+
 ## [0.2.1] - 2025-01-17
 
 ### Added
@@ -128,6 +135,7 @@ First public release of Dory - AI Memory & Conversation Management Library.
 
 This is the first public release. We welcome feedback and contributions!
 
+[0.2.2]: https://github.com/kopiloto/dory/releases/tag/v0.2.2
 [0.2.1]: https://github.com/kopiloto/dory/releases/tag/v0.2.1
 [0.2.0]: https://github.com/kopiloto/dory/releases/tag/v0.2.0
 [0.1.1]: https://github.com/kopiloto/dory/releases/tag/v0.1.1
