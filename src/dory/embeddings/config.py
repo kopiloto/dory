@@ -123,7 +123,7 @@ class EmbeddingsConfig(BaseModel):
             if not self.connection_string:
                 raise ValueError("MongoDB requires connection_string")
             config["vector_store"] = {
-                "provider": "mongodb_atlas",
+                "provider": "mongodb",
                 "config": {
                     "connection_string": self.connection_string,
                     "database_name": self.database_name,
