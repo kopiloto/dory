@@ -125,10 +125,9 @@ class EmbeddingsConfig(BaseModel):
             config["vector_store"] = {
                 "provider": "mongodb",
                 "config": {
-                    "connection_string": self.connection_string,
-                    "database_name": self.database_name,
+                    "mongo_uri": self.connection_string,
+                    "db_name": self.database_name,
                     "collection_name": self.collection,
-                    "index_name": f"{self.collection}_index",
                 },
             }
 
