@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2025-01-17
+
+### Changed
+
+- **Dependencies**: Updated `mongoengine-plus` to use fork with pymongo 4.x support
+  - Changed repository to `dpastra-na/mongoengine-plus@feat/pymongo-4-support`
+  - This enables compatibility with modern pymongo versions
+- **Build Configuration**: Added `allow-direct-references = true`
+to support git-based dependencies
+
 ## [0.2.3] - 2025-01-17
 
 ### Fixed
@@ -144,6 +154,7 @@ First public release of Dory - AI Memory & Conversation Management Library.
 
 This is the first public release. We welcome feedback and contributions!
 
+[0.2.4]: https://github.com/kopiloto/dory/releases/tag/v0.2.4
 [0.2.3]: https://github.com/kopiloto/dory/releases/tag/v0.2.3
 [0.2.2]: https://github.com/kopiloto/dory/releases/tag/v0.2.2
 [0.2.1]: https://github.com/kopiloto/dory/releases/tag/v0.2.1

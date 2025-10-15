@@ -8,7 +8,7 @@ authors = [{ name = "Kopiloto Team", email = "kopiloto@kavak.com" }]
 
 # Core runtime dependencies (MongoDB + async support)
 dependencies = [
-    "mongoengine-plus>=1.2.0",
+    "mongoengine-plus @ git+https://github.com/dpastra-na/mongoengine-plus.git@feat/pymongo-4-support",
     "pydantic>=2.5.0",
     "mem0ai>=0.0.20",
     "pydantic-ai>=1.0.18",
@@ -26,6 +26,9 @@ packages = ["src/dory"]
 
 [tool.hatch.version]
 path = "src/dory/__init__.py"
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [dependency-groups]
 dev = [

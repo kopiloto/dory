@@ -62,7 +62,7 @@ pip install dory
 ```toml
 [project]
 dependencies = [
-    "dory>=0.2.3",
+    "dory>=0.2.4",
     # ... other dependencies
 ]
 ```
