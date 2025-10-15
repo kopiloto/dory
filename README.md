@@ -125,7 +125,7 @@ if __name__ == "__main__":
 
 ```python
 import asyncio
-from dory.embeddings import build_embeddings
+from dory.embeddings import build_embeddings, Mem0Message
 
 
 async def embeddings_example():
@@ -137,12 +137,34 @@ async def embeddings_example():
         collection="my_memories"
     )
 
-    # Store contextual memories
+    # Store contextual memories - Option 1: Simple string
     memory_id = await embeddings.remember(
-        content="User prefers Python over Java",
+        messages="User prefers Python over Java",
         user_id="user_123",
         conversation_id="conv_abc",
         metadata={"topic": "preferences"}
+    )
+
+    # Store memories - Option 2: Conversation format (RECOMMENDED)
+    memory_id = await embeddings.remember(
+        messages=[
+            {"role": "user", "content": "I love Python programming"},
+            {"role": "assistant", "content": "Python is great for many tasks!"},
+            {"role": "user", "content": "I prefer it over Java"}
+        ],
+        user_id="user_123",
+        conversation_id="conv_abc",
+        metadata={"topic": "preferences"}
+    )
+
+    # Store memories - Option 3: Using Pydantic models (type-safe)
+    memory_id = await embeddings.remember(
+        messages=[
+            Mem0Message(role="user", content="I love Python programming"),
+            Mem0Message(role="assistant", content="Python is great!"),
+        ],
+        user_id="user_123",
+        conversation_id="conv_abc"
     )
 
     # Search for relevant memories
@@ -315,12 +337,20 @@ embeddings = build_embeddings(
 async def remember(
     self,
     *,
-    content: str,
+    messages: str | list[dict[str, str]] | list[Mem0Message],
     user_id: str,
     conversation_id: str | None = None,
     metadata: dict[str, Any] | None = None
 ) -> str:
-    """Store a memory with LLM processing for context extraction."""
+    """Store a memory with LLM processing for context extraction.
+
+    Accepts three formats:
+    - Simple string: "User likes Python"
+    - List of dicts: [{"role": "user", "content": "..."}, ...]
+    - List of Mem0Message objects (type-safe with validation)
+
+    For best results with mem0, use conversation format (list of messages).
+    """
 
 async def recall(
     self,

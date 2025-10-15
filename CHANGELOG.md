@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-01-17
+
+### Added
+
+#### Embeddings Service - Enhanced Message Formats
+
+- **Multiple Input Formats**: `remember()` now accepts three formats:
+  - Simple strings: `"User likes Python"` (backward compatible)
+  - List of dictionaries: `[{"role": "user", "content": "..."}]`
+    (mem0 native format)
+  - Pydantic models: `[Mem0Message(role="user", content="...")]`
+    (type-safe with validation)
+- **Conversation Context Support**: Full support for mem0's conversation
+  analysis by passing complete message histories
+- **Type Safety**: New `Mem0Message` Pydantic model with role validation
+  (`user`, `assistant`, `system`)
+- **New Types**: `MessageInput` union type for flexible message input
+  handling
+
+### Changed
+
+#### Embeddings Service API
+
+- **Breaking**: `remember()` parameter renamed from `content: str` to
+  `messages: MessageInput`
+  - **Migration**: Simple rename: `content="text"` → `messages="text"`
+  - **100% Backward Compatible**: All existing string-based code
+    continues to work
+- **Enhanced mem0 Usage**: Now uses mem0 according to its official
+  documentation for richer context analysis
+
+### Technical Improvements
+
+- **Internal Adapter**: `_messages_to_mem0_format()` automatically converts
+  Pydantic objects to mem0-compatible dictionaries
+- **Validation**: Empty message lists raise clear `ValueError` with
+  descriptive message
+- **Error Handling**: Invalid message formats raise `ValueError` with type
+  information
+- **Test Coverage**: Added 6 comprehensive tests covering all message
+  formats (34 total tests, 100% passing)
+- **Linting**: Full mypy strict mode compliance with proper type casting
+- **Documentation**: Added `MEMORY_USAGE_GUIDE.md` with detailed usage
+  examples and best practices
+
 ## [0.2.0] - 2025-10-14
 
 ### Added
@@ -103,6 +148,7 @@ First public release of Dory - AI Memory & Conversation Management Library.
 
 This is the first public release. We welcome feedback and contributions!
 
+[0.2.1]: https://github.com/kopiloto/dory/releases/tag/v0.2.1
 [0.2.0]: https://github.com/kopiloto/dory/releases/tag/v0.2.0
 [0.1.1]: https://github.com/kopiloto/dory/releases/tag/v0.1.1
 [0.1.0]: https://github.com/kopiloto/dory/releases/tag/v0.1.0
