@@ -21,10 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     (type-safe with validation)
 - **Conversation Context Support**: Full support for mem0's conversation
   analysis by passing complete message histories
-- **Type Safety**: New `Mem0Message` Pydantic model with role validation
-  (`user`, `assistant`, `system`)
-- **New Types**: `MessageInput` union type for flexible message input
-  handling
 
 ### Changed
 
@@ -35,22 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Migration**: Simple rename: `content="text"` → `messages="text"`
   - **100% Backward Compatible**: All existing string-based code
     continues to work
-- **Enhanced mem0 Usage**: Now uses mem0 according to its official
-  documentation for richer context analysis
-
-### Technical Improvements
-
-- **Internal Adapter**: `_messages_to_mem0_format()` automatically converts
-  Pydantic objects to mem0-compatible dictionaries
-- **Validation**: Empty message lists raise clear `ValueError` with
-  descriptive message
-- **Error Handling**: Invalid message formats raise `ValueError` with type
-  information
-- **Test Coverage**: Added 6 comprehensive tests covering all message
-  formats (34 total tests, 100% passing)
-- **Linting**: Full mypy strict mode compliance with proper type casting
-- **Documentation**: Added `MEMORY_USAGE_GUIDE.md` with detailed usage
-  examples and best practices
 
 ## [0.2.0] - 2025-10-14
 
