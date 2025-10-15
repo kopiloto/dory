@@ -28,7 +28,7 @@ class UserSummaryDocument(BaseModel, AsyncDocument):
             "updated_at",
             {"fields": ["user_id"], "unique": True},
         ],
-        "auto_create_index": False,
+        "auto_create_index": True,
     }
 
     id: str = StringField(primary_key=True)
@@ -51,7 +51,7 @@ class UserActionDocument(BaseModel, AsyncDocument):
             {"fields": ["user_id", "created_at"]},
             {"fields": ["user_id", "action_type"]},
         ],
-        "auto_create_index": False,
+        "auto_create_index": True,
     }
 
     id: str = StringField(primary_key=True)

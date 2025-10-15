@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .adapters.base import MemoryAdapter
+from .adapters.types import MessageInput
 
 __all__ = ["Embeddings"]
 
@@ -18,7 +19,7 @@ class Embeddings:
 
     async def remember(
         self,
-        content: str,
+        messages: MessageInput,
         *,
         user_id: str,
         conversation_id: str | None = None,
@@ -26,7 +27,7 @@ class Embeddings:
     ) -> str:
         """Process and store content as a memory."""
         return await self._adapter.add_memory(
-            content=content,
+            messages=messages,
             user_id=user_id,
             conversation_id=conversation_id,
             metadata=metadata,

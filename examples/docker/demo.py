@@ -89,24 +89,33 @@ async def run_demo() -> None:
     )
 
     # Store memories
-    for mem in [
-        "The user is learning about Python decorators",
-        "The user prefers simple, practical examples",
-        "The user wants to understand the @ syntax for decorators",
-    ]:
-        await emb.remember(
-            content=mem,
-            user_id="demo_user",
-            conversation_id=cid,
-            metadata={"source": "demo", "timestamp": datetime.now().isoformat()},
-        )
+    print("\n→ Storing memories...")
+    conversation_messages = [
+        {"role": "user", "content": "Can you teach me about the @ syntax?"},
+        {
+            "role": "assistant",
+            "content": "The @ syntax is used to apply decorators in Python",
+        },
+        {"role": "user", "content": "Can you show me a practical example?"},
+    ]
+    await emb.remember(
+        messages=conversation_messages,
+        user_id="demo_user",
+        conversation_id=cid,
+        metadata={
+            "source": "demo",
+            "type": "conversation",
+            "timestamp": datetime.now().isoformat(),
+        },
+    )
+
     res = await emb.recall(
         query="What is the user learning about?",
         user_id="demo_user",
         conversation_id=cid,
         limit=5,
     )
-    print(f"Memories found: {len(res)}")
+    print(f"\nMemories found: {len(res)}")
     for i, r in enumerate(res, 1):
         print(
             f"  {i}. content={r.get('content')!r} score={r.get('score')} meta={r.get('metadata')}"

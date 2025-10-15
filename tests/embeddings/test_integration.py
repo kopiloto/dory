@@ -21,7 +21,7 @@ async def test_should_complete_full_memory_flow_when_using_embeddings_service() 
     service = Embeddings(adapter=mock_adapter)
 
     memory_id = await service.remember(
-        content="Important information",
+        messages="Important information",
         user_id="test_user",
     )
 
@@ -90,7 +90,7 @@ async def test_should_process_memories_when_using_mem0_adapter(
     service = Embeddings(adapter=adapter)
 
     memory_id = await service.remember(
-        content="Test with mem0",
+        messages="Test with mem0",
         user_id="test_user",
     )
 
@@ -108,7 +108,7 @@ async def test_should_process_memories_when_using_mem0_adapter(
     mock_memory.add.assert_called_once_with(
         messages="Test with mem0",
         user_id="test_user",
-        metadata={},  # Empty dict instead of None
+        metadata={},
     )
     mock_memory.search.assert_called_once_with(
         query="mem0",
@@ -158,7 +158,7 @@ async def test_should_separate_memories_and_embeddings_when_both_stored(
     service = Embeddings(adapter=adapter)
 
     memory_id = await service.remember(
-        content="This is a memory",
+        messages="This is a memory",
         user_id="test_user",
     )
     embedding_id = await service.store_embedding(
@@ -202,7 +202,7 @@ async def test_should_handle_conversation_context_when_provided() -> None:
     user_id = "test_user"
 
     memory_id = await service.remember(
-        content="Message in conversation",
+        messages="Message in conversation",
         user_id=user_id,
         conversation_id=conversation_id,
     )
@@ -218,7 +218,7 @@ async def test_should_handle_conversation_context_when_provided() -> None:
     assert results[0]["content"] == "Conversation memory"
 
     mock_adapter.add_memory.assert_called_once_with(
-        content="Message in conversation",
+        messages="Message in conversation",
         user_id=user_id,
         conversation_id=conversation_id,
         metadata=None,
@@ -277,7 +277,7 @@ async def test_should_create_working_service_when_using_builder(
     )
 
     memory_id = await service.remember(
-        content="Built service test",
+        messages="Built service test",
         user_id="test_user",
     )
 
@@ -297,7 +297,7 @@ async def test_should_handle_metadata_correctly_when_provided() -> None:
     embedding_metadata = {"type": "document", "format": "pdf"}
 
     memory_id = await service.remember(
-        content="Memory with metadata",
+        messages="Memory with metadata",
         user_id="test_user",
         metadata=memory_metadata,
     )
@@ -312,7 +312,7 @@ async def test_should_handle_metadata_correctly_when_provided() -> None:
     assert embedding_id == "meta_emb_456"
 
     mock_adapter.add_memory.assert_called_once_with(
-        content="Memory with metadata",
+        messages="Memory with metadata",
         user_id="test_user",
         conversation_id=None,
         metadata=memory_metadata,

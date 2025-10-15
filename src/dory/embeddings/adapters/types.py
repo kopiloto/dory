@@ -1,7 +1,7 @@
 """Type definitions for embeddings adapters."""
 
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -10,7 +10,17 @@ __all__ = [
     "EmbeddingResult",
     "MemoryMetadata",
     "EmbeddingMetadata",
+    "Mem0Message",
+    "MessageInput",
 ]
+
+
+class Mem0Message(BaseModel):
+    role: Literal["user", "assistant", "system"]
+    content: str
+
+
+MessageInput = str | list[Mem0Message] | list[dict[str, str]]
 
 
 class MemoryMetadata(BaseModel):

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from mem0 import Memory
 
 from ..config import EmbeddingsConfig
 from .base import MemoryAdapter
+from .types import Mem0Message, MessageInput
 
 __all__ = ["Mem0Adapter"]
 
@@ -51,10 +52,34 @@ class Mem0Adapter(MemoryAdapter):
 
         raise ValueError(f"Mem0 did not return a valid ID. Response: {result}")
 
+    def _messages_to_mem0_format(
+        self, messages: MessageInput
+    ) -> str | list[dict[str, str]]:
+        if isinstance(messages, str):
+            return messages
+
+        if isinstance(messages, list):
+            if not messages:
+                raise ValueError("Messages list cannot be empty")
+
+            first_item = messages[0]
+            if isinstance(first_item, dict):
+                return cast(list[dict[str, str]], messages)
+
+            converted_messages: list[dict[str, str]] = []
+            for msg in messages:
+                if isinstance(msg, Mem0Message):
+                    converted_messages.append(
+                        {"role": msg.role, "content": msg.content}
+                    )
+            return converted_messages
+
+        raise ValueError(f"Invalid messages format: {type(messages)}")
+
     async def add_memory(
         self,
         *,
-        content: str,
+        messages: MessageInput,
         user_id: str,
         conversation_id: str | None = None,
         metadata: dict[str, Any] | None = None,
@@ -65,8 +90,10 @@ class Mem0Adapter(MemoryAdapter):
         if conversation_id:
             mem0_metadata["conversation_id"] = conversation_id
 
+        formatted_messages = self._messages_to_mem0_format(messages)
+
         result = self._memory.add(
-            messages=content,
+            messages=formatted_messages,
             user_id=user_id,
             metadata=mem0_metadata,
         )

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
+from .types import MessageInput
+
 __all__ = ["MemoryAdapter"]
 
 
@@ -13,7 +15,7 @@ class MemoryAdapter(Protocol):
     async def add_memory(
         self,
         *,
-        content: str,
+        messages: MessageInput,
         user_id: str,
         conversation_id: str | None = None,
         metadata: dict[str, Any] | None = None,

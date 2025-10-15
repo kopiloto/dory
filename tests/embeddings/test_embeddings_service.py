@@ -13,18 +13,18 @@ async def test_should_store_memory_and_return_id_when_remember_is_called(
     """Verify that remember method delegates to adapter and returns memory ID."""
     # Arrange
     service = Embeddings(adapter=mock_adapter)
-    content = "Important information"
+    messages = "Important information"
     user_id = "user_123"
     metadata = {"source": "chat"}
     expected_id = "mem_123"
 
     # Act
-    result = await service.remember(content=content, user_id=user_id, metadata=metadata)
+    result = await service.remember(messages=messages, user_id=user_id, metadata=metadata)
 
     # Assert
     assert result == expected_id, f"Expected memory ID '{expected_id}', got '{result}'"
     mock_adapter.add_memory.assert_called_once_with(
-        content=content,
+        messages=messages,
         user_id=user_id,
         conversation_id=None,
         metadata=metadata,
@@ -167,13 +167,13 @@ async def test_should_include_conversation_id_when_provided_in_remember(
     """Verify that conversation_id is passed through when provided."""
     # Arrange
     service = Embeddings(adapter=mock_adapter)
-    content = "Conversation message"
+    messages = "Conversation message"
     user_id = "user_123"
     metadata = {"turn": 1}
 
     # Act
     await service.remember(
-        content=content,
+        messages=messages,
         user_id=user_id,
         conversation_id=conversation_id,
         metadata=metadata,
@@ -181,7 +181,7 @@ async def test_should_include_conversation_id_when_provided_in_remember(
 
     # Assert
     mock_adapter.add_memory.assert_called_once_with(
-        content=content,
+        messages=messages,
         user_id=user_id,
         conversation_id=expected_call_id,
         metadata=metadata,
@@ -217,8 +217,8 @@ async def test_should_handle_multiple_operations_in_sequence_when_batch_processi
     memories_to_add = ["Memory 0", "Memory 1", "Memory 2"]
 
     # Act - Add multiple memories
-    for i, content in enumerate(memories_to_add):
-        await service.remember(content=content, user_id=user_id)
+    for i, messages in enumerate(memories_to_add):
+        await service.remember(messages=messages, user_id=user_id)
 
     # Act - Search memories
     await service.recall(query="Memory", user_id=user_id)
