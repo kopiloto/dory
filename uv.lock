@@ -567,7 +567,7 @@ source = { editable = "." }
 dependencies = [
     { name = "httpx" },
     { name = "mem0ai" },
-    { name = "mongoengine-plus" },
+    { name = "mongoengine-plus-pymongo-4" },
     { name = "pydantic" },
     { name = "pydantic-ai" },
 ]
@@ -594,7 +594,7 @@ dev = [
 requires-dist = [
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "mem0ai", specifier = ">=0.0.20" },
-    { name = "mongoengine-plus", git = "https://github.com/dpastra-na/mongoengine-plus.git?rev=feat%2Fpymongo-4-support" },
+    { name = "mongoengine-plus-pymongo-4", specifier = ">=1.2.1" },
     { name = "mypy", marker = "extra == 'linting'" },
     { name = "pydantic", specifier = ">=2.5.0" },
     { name = "pydantic-ai", specifier = ">=1.0.18" },
@@ -1303,9 +1303,9 @@ wheels = [
 ]
 
 [[package]]
-name = "mongoengine-plus"
+name = "mongoengine-plus-pymongo-4"
 version = "1.2.1"
-source = { git = "https://github.com/dpastra-na/mongoengine-plus.git?rev=feat%2Fpymongo-4-support#8f067d6c683df1fb592d486a86a2fea28cfebdf6" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "blinker" },
     { name = "boto3" },
@@ -1313,6 +1313,9 @@ dependencies = [
     { name = "mongoengine" },
     { name = "pymongo" },
     { name = "pymongocrypt" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c4/5a/5ddbb2c7deda5699707283bcf5705523eacbf7b0942222113ebc65e1b465/mongoengine_plus_pymongo_4-1.2.1-py3-none-any.whl", hash = "sha256:255885cff49a6499280ddce03c3147f2b3c7a6463807f5fbb7747c6b2f1739a7", size = 23724, upload-time = "2025-10-15T23:56:25.889Z" },
 ]
 
 [[package]]
