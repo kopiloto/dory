@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2025-01-17
+
+### Added
+
+- **Embeddings Configuration**: Automatic database name extraction from URI
+  - Added `extract_database_from_uri()` helper function
+  - `database_name` parameter is now optional in `EmbeddingsConfig`
+  - Automatically extracts database name from connection string if not provided
+
+### Changed
+
+- **Dependencies**: Updated to use official `mongoengine-plus-pymongo-4>=1.2.1`
+from PyPI
+  - Provides full support for pymongo 4.9
+
 ## [0.2.4] - 2025-01-17
 
 ### Changed
@@ -154,6 +169,7 @@ First public release of Dory - AI Memory & Conversation Management Library.
 
 This is the first public release. We welcome feedback and contributions!
 
+[0.2.5]: https://github.com/kopiloto/dory/releases/tag/v0.2.5
 [0.2.4]: https://github.com/kopiloto/dory/releases/tag/v0.2.4
 [0.2.3]: https://github.com/kopiloto/dory/releases/tag/v0.2.3
 [0.2.2]: https://github.com/kopiloto/dory/releases/tag/v0.2.2

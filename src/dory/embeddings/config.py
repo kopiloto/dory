@@ -1,10 +1,19 @@
 """Configuration for embeddings service."""
 
 from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 __all__ = ["EmbeddingsConfig"]
+
+
+def extract_database_from_uri(uri: str) -> str | None:
+    parsed = urlparse(uri)
+    path = parsed.path.lstrip("/")
+    if path and "?" in path:
+        path = path.split("?")[0]
+    return path if path else None
 
 
 class EmbeddingsConfig(BaseModel):
@@ -30,8 +39,8 @@ class EmbeddingsConfig(BaseModel):
         description="MongoDB connection string (when using MongoDB)",
     )
 
-    database_name: str = Field(
-        default="dory",
+    database_name: str | None = Field(
+        default=None,
         description="Database name for MongoDB",
     )
 
@@ -61,9 +70,20 @@ class EmbeddingsConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_mongodb_config(self) -> "EmbeddingsConfig":
-        """Validate MongoDB configuration."""
-        if self.store == "mongodb" and not self.connection_string:
-            raise ValueError("MongoDB store requires connection_string")
+        if self.store == "mongodb":
+            if not self.connection_string:
+                raise ValueError("MongoDB store requires connection_string")
+
+            if not self.database_name:
+                extracted_db = extract_database_from_uri(self.connection_string)
+                if extracted_db:
+                    self.database_name = extracted_db
+                else:
+                    raise ValueError(
+                        "Could not extract database name from connection_string. "
+                        "Please provide database_name explicitly or include it in the URI"
+                    )
+
         return self
 
     def to_mem0_config(self) -> dict[str, Any]:

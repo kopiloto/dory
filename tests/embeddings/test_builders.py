@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.dory.embeddings import build_embeddings
-from src.dory.embeddings.config import EmbeddingsConfig
+from src.dory.embeddings.config import EmbeddingsConfig, extract_database_from_uri
 from src.dory.embeddings.service import Embeddings
 
 
@@ -20,7 +20,7 @@ def test_should_create_embeddings_with_mongodb_store(
     service = build_embeddings(
         api_key="test-key",
         store="mongodb",
-        connection_string="mongodb://localhost:27017",
+        connection_string="mongodb://localhost:27017/testdb",
         collection="test_memories",
     )
 
@@ -99,3 +99,53 @@ def test_embeddings_config_to_mem0() -> None:
     assert mem0_config["vector_store"]["provider"] == "chroma"
     assert mem0_config["vector_store"]["config"]["path"] == "/test/path"
     assert mem0_config["vector_store"]["config"]["collection_name"] == "test"
+
+
+@pytest.mark.parametrize(
+    "uri,expected",
+    [
+        ("mongodb://localhost:27017/myapp", "myapp"),
+        (
+            "mongodb+srv://user:pass@cluster.mongodb.net/production?retryWrites=true",
+            "production",
+        ),
+        ("mongodb://user:password@localhost:27017/testdb", "testdb"),
+        ("mongodb://localhost:27017", None),
+    ],
+)
+def test_should_extract_database_from_uri_when_present(
+    uri: str, expected: str | None
+) -> None:
+    result = extract_database_from_uri(uri)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "connection_string,database_name,expected_db_name",
+    [
+        ("mongodb://localhost:27017/extracted_db", None, "extracted_db"),
+        ("mongodb://localhost:27017/ignored_db", "explicit_db", "explicit_db"),
+    ],
+)
+def test_should_handle_database_name_extraction_and_override(
+    connection_string: str,
+    database_name: str | None,
+    expected_db_name: str,
+) -> None:
+    config = EmbeddingsConfig(
+        store="mongodb",
+        connection_string=connection_string,
+        database_name=database_name,
+    )
+    assert config.database_name == expected_db_name
+
+
+def test_should_raise_error_when_no_database_in_uri_or_explicit() -> None:
+    with pytest.raises(
+        ValueError,
+        match="Could not extract database name from connection_string",
+    ):
+        EmbeddingsConfig(
+            store="mongodb",
+            connection_string="mongodb://localhost:27017",
+        )

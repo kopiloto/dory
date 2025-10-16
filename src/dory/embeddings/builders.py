@@ -21,6 +21,7 @@ def build_embeddings(
     store: str = "chroma",
     store_path: str | None = None,
     connection_string: str | None = None,
+    database_name: str | None = None,
     collection: str = "memories",
 ) -> Embeddings:
     """Build embeddings service with simplified configuration."""
@@ -30,6 +31,7 @@ def build_embeddings(
         store=store,
         store_path=store_path,
         connection_string=connection_string,
+        database_name=database_name,
         collection=collection,
     )
 
